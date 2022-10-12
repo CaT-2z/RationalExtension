@@ -1,14 +1,12 @@
 package src;
 
-import java.io.Console;
 import java.math.BigInteger;
 import java.util.*;
 import java.util.function.BiConsumer;
-import java.util.function.BiFunction;
-import java.util.function.Consumer;
 
 // TODO Rational to BasisSet()
-public class ExtendedRational extends Rational{
+/// Rational with a map of basis-value pairs.
+public class ExtendedRational extends Rational implements IBasisPart, Cloneable{
     public HashMap<BasisSet, Rational> data;
     public ExtendedRational(){
         super(BigInteger.ZERO, BigInteger.ONE);
@@ -17,6 +15,7 @@ public class ExtendedRational extends Rational{
     public ExtendedRational(Rational o){
         super(o);
         data = new HashMap<BasisSet, Rational>();
+        data.put(BasisSet.EMPTY, o);
     }
 
     // Pollard-Strassen algorithm for prime factorizationn
@@ -69,12 +68,12 @@ public class ExtendedRational extends Rational{
 
         for (BigInteger k: numfactors) {
             if(k.compareTo(BigInteger.ONE) == 0) continue;
-            fin.add(k);
+            fin.addAdditive(k);
             newnum = newnum.multiply(fin.get(k).add(new Rational(BigInteger.ONE, b)));
         }
         for (BigInteger k: denfactors) {
             if(k.compareTo(BigInteger.ONE) == 0) continue;
-            fin.add(k);
+            fin.addAdditive(k);
             newnum = newnum.multiply(fin.get(k).add(new Rational(BigInteger.ONE.negate(), b)));
         }
         data = new HashMap<BasisSet, Rational>();
@@ -87,12 +86,12 @@ public class ExtendedRational extends Rational{
         }
     }
 
-    public ExtendedRational root(ExtendedRational o, BigInteger b){
-        Iterator<Map.Entry<BasisSet, Rational>> e = o.data.entrySet().iterator();
-        while(e.hasNext()){
-
-        }
-    }
+//    public ExtendedRational root(ExtendedRational o, BigInteger b){
+//        Iterator<Map.Entry<BasisSet, Rational>> e = o.data.entrySet().iterator();
+//        while(e.hasNext()){
+//
+//        }
+//    }
 
     public ExtendedRational(Rational o, HashMap<BasisSet, Rational> hash){
         super(o);
@@ -185,5 +184,16 @@ public class ExtendedRational extends Rational{
         newRational = newRational.add(hash.getOrDefault(new BasisSet(), Rational.ZERO));
         hash.remove(new BasisSet());
         return new ExtendedRational(newRational, hash);
+    }
+
+    @Override
+    public Object clone(){
+        ExtendedRational rat = (ExtendedRational) super.clone();
+        Iterator<Map.Entry<BasisSet, Rational>> it = data.entrySet().iterator();
+        while(it.hasNext()){
+            Map.Entry<BasisSet, Rational> ent = it.next();
+            rat.data.put((BasisSet) ent.getKey().clone(),(Rational) ent.getValue().clone());
+        }
+        return rat;
     }
 }

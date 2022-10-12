@@ -5,7 +5,7 @@ import org.jetbrains.annotations.NotNull;
 import java.math.BigInteger;
 
 //TODO: gcd with Rational.ZERO is weird;
-public class Rational {
+public class Rational implements Cloneable{
     protected BigInteger numerator;
     protected BigInteger denominator;
 
@@ -19,12 +19,14 @@ public class Rational {
     public static final Rational ONE = new Rational(BigInteger.ONE,BigInteger.ONE);
     public static final Rational ZERO = new Rational(BigInteger.ZERO, BigInteger.ONE);
 
-    Rational(BigInteger n, @NotNull BigInteger d){
-        if(d.compareTo(new BigInteger("0")) == 0){
+    public static final Rational HALF = new Rational(BigInteger.ONE, BigInteger.TWO);
+
+    Rational(BigInteger numerate, @NotNull BigInteger denominate){
+        if(denominate.compareTo(new BigInteger("0")) == 0){
             throw new ArithmeticException("0 in denominator exception");
         }
-        numerator = n;
-        denominator = d;
+        numerator = numerate;
+        denominator = denominate;
     }
 
     Rational(Rational o){
@@ -84,6 +86,13 @@ public class Rational {
     public boolean equals(Rational src){
         if(src == null) return false;
         return compareTo(src) == 0;
+    }
+
+    ///\brief clones, Bigintiger is immutable.
+    ///\return cloned object.
+    @Override
+    public Object clone(){
+        return new Rational( numerator,denominator);
     }
 
 }

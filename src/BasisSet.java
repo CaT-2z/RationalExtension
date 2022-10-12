@@ -7,47 +7,57 @@ import java.util.*;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.IntFunction;
-import java.util.function.Predicate;
 import java.util.stream.Stream;
 
-//TODO: 2x5x3 is not the same as 2x5x3 with other fractions
-public class BasisSet extends AbstractSet<Basis>
-    implements Set<Basis>, Cloneable, java.io.Serializable, Comparable<BasisSet>, ICalculable{
+public class BasisSet extends AbstractSet<IBasisPart>
+    implements Set<IBasisPart>, Cloneable, java.io.Serializable, Comparable<BasisSet>{
+
+
+    final static BasisSet EMPTY = new BasisSet();
 
     @java.io.Serial
     static final long serialVersionUID = -4924742326767321676L;
 
-    private transient HashMap<BigInteger,Basis> map;
+    //What constitutes as equal depends on whether its addition or multiplication, therefore it uses a map that.. what??
+    //Yes so one BasisSet is one base, but the naming convention is crap I know
+    private transient HashMap<BasisPartKey, IBasisPart> map;
 
-    private Rational remainder;
+    private ExtendedRational remainder;
 
     private static final Object PRESENT = new Object();
 
     public BasisSet(){
-        map = new HashMap<BigInteger,Basis>();
+        map = new HashMap<BasisPartKey, IBasisPart>();
         remainder = Rational.ONE;
     }
 
     public BasisSet(BasisSet o) {
-        map = new HashMap<BigInteger, Basis>(o.map);
+        map = new HashMap<BasisPartKey, IBasisPart>(o.map);
         remainder = o.remainder;
     }
 
 
     //Creates new BasisSet, the Rational part is in the remainder, uses both parents remainder, don't forget to purge remainder
+    //TODO: New version breaks this fix it
     //CREATES NEW!!!! BASIS SET!!!
     public BasisSet multiply(BasisSet o) {
-        if (!remainder.equals(Rational.ONE) || !o.remainder.equals(Rational.ONE) ) {
-            System.out.println("WARNING: multiplication with dirty BasisSets");
-        }
         BasisSet a = new BasisSet(this);
-        a.remainder = remainder.multiply(o.remainder);
-        for (Basis b: o.map.values()) {
-            a.remainder = a.remainder.multiply(a.addTo(b));
+        if (!remainder.equals(Rational.ONE) || !o.remainder.equals(Rational.ONE) ) {
+            a.remainder = remainder.multiply(o.remainder);
+            System.out.println("WARNING: multiplication with dirty BasisSets");
+        }else{
+            a.remainder = new ExtendedRational();
+        }
+        for (IBasisPart b: o.map.values()) {
+            a.remainder = a.remainder.multiply(a.addMultiplicative(b));
         }
         return a;
     }
 
+
+
+
+    //TODO: Breaks this too fix this
     public Rational useRemainder(){
         Rational ret = new Rational(remainder);
         remainder = Rational.ONE;
@@ -56,15 +66,15 @@ public class BasisSet extends AbstractSet<Basis>
 
 
     @Override
-    public Iterator<Basis> iterator() {
+    public Iterator<IBasisPart> iterator() {
         return map.values().iterator();
     }
 
     @Override
-    public void forEach(Consumer<? super Basis> action) {
-        map.forEach(new BiConsumer<BigInteger, Basis>() {
+    public void forEach(Consumer<? super IBasisPart> action) {
+        map.forEach(new BiConsumer<BasisPartKey, IBasisPart>() {
             @Override
-            public void accept(BigInteger o, Basis basis) {
+            public void accept(BasisPartKey o, IBasisPart basis) {
                 action.accept(basis);
             }
         });
@@ -73,12 +83,12 @@ public class BasisSet extends AbstractSet<Basis>
     //TODO: Serialization
 
     @Override
-    public <Basis> Basis[] toArray(IntFunction<Basis[]> generator) {
-        return (Basis[])map.keySet().toArray();
+    public <IBasis> IBasis[] toArray(IntFunction<IBasis[]> generator) {
+        return (IBasis[])map.keySet().toArray();
     }
 
     @Override
-    public Stream<Basis> stream() {
+    public Stream<IBasisPart> stream() {
         return super.stream();
     }
 
@@ -88,7 +98,9 @@ public class BasisSet extends AbstractSet<Basis>
     }
 
     //Adds exactly once, overrides parent, only use for creation
-    public boolean add(Basis src){
+
+    //TODO: Fix this, IBasisPart should probably have its key in attribute.
+    public boolean addAdditive(IBasisPart src){
         if(map.containsKey(src.getBase())){
             return false;
         }
@@ -97,29 +109,37 @@ public class BasisSet extends AbstractSet<Basis>
     }
 
     //Adds exactly once, overrides parent
-    public boolean add(BigInteger k){
+    //TODO: Fix this
+    ///\brief adds a SimpleBasisPart
+    public boolean addAdditive(BigInteger k){
         if(map.containsKey(k)){
             return false;
         }
-        else map.put(k, new Basis(k, Rational.ZERO));
+        else map.put(new BasisPartKey(k), new SimpleBasisPart(k, Rational.ZERO));
         return true;
+    }
+
+    //Don't forget, Rationals are immutable by default, need to do it right
+    ///\brief Like multiplicative adding, except it won't normalise the value, used in rationalizing an extended rational.
+    public void addMultSilently(@NotNull IBasisPart src){
+        if(map.containsKey(src.getKey())){
+            map.get(src.getKey())
+        }
+        else map.put(src.getKey(), src);
     }
 
 
     //Adds the basis' value to the basis in the map, returns remainder. If the key doesn't exist, it assumes (Rational) src in [0, 1[
-    public Rational addTo(@NotNull Basis src){
-        if(map.containsKey(src.getBase())){
-            return map.get(src.getBase()).add((Rational) src);
+    //TODO: Fix this, will return ExtendedRational (or will have two implementations)
+    public Rational addMultiplicative(@NotNull IBasisPart src){
+        if(map.containsKey(src.getKey())){
+            return map.get(src.getKey()).addAndRemainder((Rational) src);
         }
-        else map.put(src.getBase(), src);
+        else map.put(src.getKey(), src);
         return Rational.ONE;
     }
 
-    public Basis get(Basis src){
-        return map.get(src.getBase());
-    }
-
-    public Basis get(BigInteger b){
+    public IBasisPart get(BasisPartKey b){
         return map.get(b);
     }
 
@@ -157,8 +177,9 @@ public class BasisSet extends AbstractSet<Basis>
         }
 
     public boolean isNone(){
-        for (BigInteger i: map.keySet()){
-            if(map.get(i).numerator.compareTo(BigInteger.ZERO) == 0) continue;
+        Iterator<IBasisPart> it = map.values().iterator();
+        while(it.hasNext()){
+            if(it.next().getValue().numerator.compareTo(BigInteger.ZERO) == 0) continue;
             return false;
         }
         return true;
@@ -187,5 +208,29 @@ public class BasisSet extends AbstractSet<Basis>
     @Override
     public int compareTo(@NotNull BasisSet o) {
         return equals(o) ? 0 : 1;
+    }
+
+//    BasisSet multiplynew(BasisSet o){
+//        BasisSet a = new BasisSet(this);
+//        for (IBasisPart part : o.map.values()
+//             ) {
+//            if(part instanceof SimpleBasisPart){
+//                a.remainder = a.remainder.multiply(a.addTo(b));
+//            }
+//            else if(part instanceof ComplexBasisPart){
+//
+//            }
+//        }
+//    }
+
+    @Override
+    public Object clone(){
+        BasisSet ret = new BasisSet();
+        Iterator<Map.Entry<BasisPartKey, IBasisPart>> it = map.entrySet().iterator();
+        while(it.hasNext()){
+            Map.Entry<BasisPartKey,IBasisPart> ent = it.next();
+            ret.map.put((BasisPartKey) ent.getKey().clone(),(IBasisPart) ent.getValue().clone());
+        }
+        return ret;
     }
 }
