@@ -1,7 +1,9 @@
 package src;
 
-public interface IBasisPart extends Cloneable {
-    public Rational addAndRemainder(Rational e);
+public interface IBasisPart extends Cloneable, Comparable<IBasisPart> {
+    public ExtendedRational addAndRemainder(Rational e);
+
+    public void addSilently(Rational e);
 
     public BasisPartKey getKey();
 

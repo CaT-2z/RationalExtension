@@ -6,6 +6,7 @@ import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Objects;
 
 public class BasisPartKey implements Comparable<BasisPartKey>, Cloneable {
         private BigInteger n;
@@ -38,27 +39,35 @@ public class BasisPartKey implements Comparable<BasisPartKey>, Cloneable {
         //Recursive compareto, don't make a part with an array with itself in it;
         @Override
         public int compareTo(@NotNull BasisPartKey o) {
-                if(o == null){
+                if (o == null) {
                         return 1;
                 }
-                if(isInt != o.isInt){
+                if (isInt != o.isInt) {
                         return isInt ? -1 : 1;
                 }
-                if(isInt){
+                if (isInt) {
                         return n.compareTo(o.n);
-                }
-                if(!isInt){
-                        if(data.size() != o.data.size()){
+                } else {
+                        if (data.size() != o.data.size()) {
                                 return data.size() > o.data.size() ? 1 : -1;
                         }
                         BasisPartKey[] a = (BasisPartKey[]) data.toArray();
                         BasisPartKey[] b = (BasisPartKey[]) o.data.toArray();
-                        for(int i = 0; i < a.length; i++){
-                                if(a[i].compareTo(b[i]) != 0) return a[i].compareTo(b[i]);
+                        for (int i = 0; i < a.length; i++) {
+                                if (a[i].compareTo(b[i]) != 0) return a[i].compareTo(b[i]);
                         }
                         return 0;
 
                 }
+        }
+
+        /// guess who forgot what the function should look like?
+        @Override
+        public boolean equals(Object src){
+                if(src instanceof BasisPartKey){
+                        return compareTo((BasisPartKey) src) == 0;
+                }
+                return false;
         }
 
         public Object clone(){
@@ -76,5 +85,11 @@ public class BasisPartKey implements Comparable<BasisPartKey>, Cloneable {
                         }
                 }
                 return key;
+        }
+
+        ///Into the darkness we go
+        @Override
+        public int hashCode(){
+                return Objects.hash(n,data);
         }
 }

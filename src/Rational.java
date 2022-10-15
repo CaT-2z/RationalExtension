@@ -22,7 +22,7 @@ public class Rational implements Cloneable{
     public static final Rational HALF = new Rational(BigInteger.ONE, BigInteger.TWO);
 
     Rational(BigInteger numerate, @NotNull BigInteger denominate){
-        if(denominate.compareTo(new BigInteger("0")) == 0){
+        if(denominate.compareTo(BigInteger.ZERO) == 0){
             throw new ArithmeticException("0 in denominator exception");
         }
         numerator = numerate;
