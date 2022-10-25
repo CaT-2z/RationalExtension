@@ -35,14 +35,14 @@ public class BasisSet extends AbstractSet<IBasisPart>
         remainder = new ExtendedRational(Rational.ONE);
     }
 
+    /// fixed shallow copy
     public BasisSet(BasisSet o) {
-        map = new HashMap<BasisPartKey, IBasisPart>(o.map);
+        map = (HashMap<BasisPartKey, IBasisPart>) o.map.clone();
         remainder = o.remainder;
     }
 
 
     //Creates new BasisSet, the Rational part is in the remainder, uses both parents remainder, don't forget to purge remainder
-    //TODO: New version breaks this fix it
     //CREATES NEW!!!! BASIS SET!!!
     public BasisSet multiply(BasisSet o) {
         BasisSet a = (BasisSet) this.clone();
@@ -53,6 +53,8 @@ public class BasisSet extends AbstractSet<IBasisPart>
             // Rationals pointing to same object
             a.remainder = new ExtendedRational(new Rational(Rational.ONE));
         }
+
+        ///TODO: maybe remove 0s here
         for (IBasisPart b: o.map.values()) {
             a.remainder = a.remainder.multiply(a.addMultiplicative(b));
         }
@@ -62,8 +64,7 @@ public class BasisSet extends AbstractSet<IBasisPart>
 
 
 
-    //TODO: Breaks this too fix this
-    public Rational useRemainder(){
+    public ExtendedRational useRemainder(){
         ExtendedRational ret = (ExtendedRational) remainder.clone();
         remainder = new ExtendedRational(Rational.ONE);
         return ret;
@@ -113,8 +114,6 @@ public class BasisSet extends AbstractSet<IBasisPart>
     }
 
     //Adds exactly once, overrides parent, only use for creation
-
-    //TODO: Fix this, IBasisPart should probably have its key in attribute.
     public boolean addAdditive(IBasisPart src){
         if(map.containsKey(src.getKey())){
             return false;
@@ -124,7 +123,6 @@ public class BasisSet extends AbstractSet<IBasisPart>
     }
 
     //Adds exactly once, overrides parent
-    //TODO: Fix this
     ///\brief adds a SimpleBasisPart
     public boolean addAdditive(BigInteger k){
         if(map.containsKey(new BasisPartKey(k))){
@@ -140,16 +138,23 @@ public class BasisSet extends AbstractSet<IBasisPart>
         if(map.containsKey(src.getKey())){
             map.get(src.getKey()).addSilently(src.getValue());
         }
-        else map.put(src.getKey(), src);
+        else{
+            if(src.getValue().equals(Rational.ZERO)) return;
+            map.put(src.getKey(), src);
+        }
     }
 
 
     //Adds the basis' value to the basis in the map, returns remainder. If the key doesn't exist, it assumes (Rational) src in [0, 1[
     public ExtendedRational addMultiplicative(@NotNull IBasisPart src){
         if(map.containsKey(src.getKey())){
-            return map.get(src.getKey()).addAndRemainder((Rational) src);
+            ExtendedRational rem = map.get(src.getKey()).addAndRemainder(src.getValue());
+            if(map.get(src.getKey()).getValue().equals(Rational.ZERO)) map.remove(src.getKey());
+            return rem;
         }
-        else map.put(src.getKey(), src);
+        else{
+             if(!src.getValue().equals(Rational.ZERO)) map.put(src.getKey(), src);
+        }
         return new ExtendedRational(Rational.ONE);
     }
 
@@ -162,24 +167,22 @@ public class BasisSet extends AbstractSet<IBasisPart>
 
     //The set doesn't contain itself (obviously)
      public String toString(){
+            StringBuilder sb = new StringBuilder();
             Iterator<Map.Entry<BasisPartKey, IBasisPart>> i = map.entrySet().iterator();
             if (! i.hasNext())
                 return "{}";
-
-            StringBuilder sb = new StringBuilder();
-            sb.append("[");
-            Map.Entry<BasisPartKey, IBasisPart>e = i.next();
-            BasisPartKey key = e.getKey();
-            IBasisPart value = e.getValue();
-            if(!value.equals(Rational.ZERO)) {
-                sb.append(value);
-            }
+            boolean first = true;
             for (;;) {
-                e = i.next();
-                key = e.getKey();
-                value = e.getValue();
+                Map.Entry<BasisPartKey, IBasisPart> e = i.next();
+                BasisPartKey key = e.getKey();
+                IBasisPart value = e.getValue();
                 if(!value.equals(Rational.ZERO)) {
-                    sb.append(',').append(' ');
+                    if(first) {
+                        first = false;
+                    }
+                    else{
+                        sb.append(',').append(' ');
+                    }
                     sb.append(value);
                 }
                 if (! i.hasNext())

@@ -86,13 +86,67 @@ public class ExtendedRational extends Rational implements Cloneable{
         }
     }
 
-//    public ExtendedRational root(ExtendedRational o, BigInteger b){
-//        Iterator<Map.Entry<BasisSet, Rational>> e = o.data.entrySet().iterator();
-//        while(e.hasNext()){
-//
-//        }
-//    }
+    ///\brief Creates root from extended rational
+    public static ExtendedRational root(ExtendedRational o, BigInteger b){
+        if(o.isRationalCastable()){
+            return new ExtendedRational((Rational) o, b);
+        }
 
+        ExtendedRational innerPart = (ExtendedRational) o.clone();
+        Rational times = new Rational(Rational.ONE);
+
+        if(!((Rational)o).equals(Rational.ZERO)) {
+            Iterator<Map.Entry<BasisSet, Rational>> e = o.data.entrySet().iterator();
+            ArrayList<BigInteger> num = factor(o.numerator);
+            ArrayList<BigInteger> den = factor(o.denominator);
+
+            BigInteger[] nums = multiplyAndRemainder(num, b);
+            BigInteger[] dens = multiplyAndRemainder(den, b);
+
+            times = new Rational(nums[0], dens[0]).simplify();
+
+            for (Map.Entry<BasisSet, Rational> entry: innerPart.data.entrySet()) {
+                entry.setValue(entry.getValue().divide(times.pow(b.intValue())));
+            }
+
+            innerPart.numerator = nums[1];
+            innerPart.denominator = dens[1];
+        }
+
+        ComplexBasisPart part = new ComplexBasisPart(innerPart, new Rational(BigInteger.ONE, b));
+
+        ExtendedRational returner = new ExtendedRational();
+
+        ///TODO: Will you merge ComplexBasis and Basis or Do smg else?
+
+        BasisSet outer = new BasisSet();
+        outer.addAdditive(part);
+
+        returner.data.put(outer, times);
+
+        return returner;
+
+    }
+
+    ///\brief Helper function for root, Multiplies through list and takes the products root.
+    ///\returns Biginteger array, first value: The rational part of the root, second value: the remainder.
+    public static BigInteger[] multiplyAndRemainder(ArrayList<BigInteger> num, BigInteger b) {
+        BigInteger[] dens = num.stream().distinct().map((distinct) -> {
+
+            BigInteger finalDistinct = distinct;
+
+            long count = num.stream().filter((bigint) -> bigint.equals(finalDistinct)).count();
+            BigInteger remaining = distinct.pow((int) count / b.intValue());
+            BigInteger backfill = distinct.pow((int) count % b.intValue());
+
+            return new BigInteger[]{remaining, backfill};
+
+        }).reduce((b1, b2) -> new BigInteger[]{b1[0].multiply(b2[0]), b1[1].multiply(b2[1])}).orElse(null);
+        return dens;
+    }
+
+
+    ///Check that its not called with shallow copies
     public ExtendedRational(Rational o, HashMap<BasisSet, Rational> hash){
         super(o);
         data = new HashMap<BasisSet, Rational>(hash);
@@ -111,6 +165,8 @@ public class ExtendedRational extends Rational implements Cloneable{
         if (!i.hasNext())
             return super.toString();
 
+        boolean first = true;
+
         StringBuilder sb = new StringBuilder();
         sb.append('{');
         for (;;) {
@@ -118,7 +174,12 @@ public class ExtendedRational extends Rational implements Cloneable{
             BasisSet key = e.getKey();
             Rational value = e.getValue();
             if(!value.equals(Rational.ZERO)) {
-                sb.append(',').append(' ');
+                if(first){
+                    first = false;
+                }
+                else{
+                    sb.append(',').append(' ');
+                }
                 sb.append(key);
                 sb.append("=>");
                 sb.append(value);
@@ -144,29 +205,67 @@ public class ExtendedRational extends Rational implements Cloneable{
         return a;
     }
 
+    public ExtendedRational multiplyByBasis(BasisSet basis){
+        ExtendedRational a = new ExtendedRational();
+        a.put(basis, this);
+        for (Map.Entry<BasisSet, Rational> entry: this.data.entrySet()) {
+         BasisSet f = entry.getKey().multiply(basis);
+         ExtendedRational r =  f.useRemainder();
+         if(r.isRationalCastable()){
+             if(a.data.containsKey(f)){
+                 a.data.replace(f, entry.getValue().multiply((Rational)r).add(a.get(f)));
+             }
+             else{
+                 a.put(f, entry.getValue().multiply(r));
+             }
+         }
+         else{
+            a = a.add(r.multiplyByBasis(f));
+         }
+        }
+        return a;
+    }
+
+
+    ///\brief Adds two extended rationals together
     public ExtendedRational add(ExtendedRational src){
-        HashMap<BasisSet, Rational> hash = new HashMap<BasisSet, Rational>(data);
+        ExtendedRational sum = (ExtendedRational) this.clone();
         src.data.forEach(new BiConsumer<BasisSet, Rational>() {
             @Override
             public void accept(BasisSet bases, Rational rational) {
-                if(!hash.containsKey(bases)){
-                    hash.put(bases, rational);
-                }else{
-                    hash.replace(bases, hash.get(bases).add(rational));
+                if(!sum.data.containsKey(bases)){
+                    sum.data.put(bases, rational);
+                }else {
+                    sum.data.replace(bases, sum.data.get(bases).add(rational));
                 }
             }
         });
-        return new ExtendedRational(add((Rational)src), hash);
+
+        Rational s = ((Rational) this).add(src);
+        sum.numerator = s.numerator;
+        sum.denominator = s.denominator;
+
+        sum.prune();
+
+        return sum;
     }
 
-//    private Rational prune(){
-//        Rational r = Rational.ZERO;
-//        for (BasisSet b: data.keySet()) {
-//            if(b.isNone()){
-//                r = r.add(data.get(b));
-//            }
-//        }
-//    }
+    public ExtendedRational add(Rational src){
+        ExtendedRational o = (ExtendedRational) this.clone();
+        Rational r = super.add(src);
+        o.numerator = r.numerator;
+        o.denominator = r.denominator;
+
+        return o;
+    }
+
+    private void prune(){
+        Iterator<Map.Entry<BasisSet, Rational>> it = data.entrySet().iterator();
+        while(it.hasNext()){
+            Map.Entry<BasisSet, Rational> entry = it.next();
+            if(entry.getValue().equals(Rational.ZERO)) it.remove();
+        }
+    }
 
     //Creates new ExtendedRational
     //TODO: empty BasisSets don't work
@@ -179,7 +278,7 @@ public class ExtendedRational extends Rational implements Cloneable{
             return multiplyRational(src);
         }
 
-        HashMap<BasisSet, Rational> hash = new HashMap<BasisSet, Rational>();
+        ExtendedRational product = new ExtendedRational();
         data.putIfAbsent(new BasisSet(BasisSet.EMPTY), new Rational(numerator, denominator));
         src.data.putIfAbsent(new BasisSet(BasisSet.EMPTY), new Rational(src.numerator, src.denominator));
 
@@ -187,26 +286,33 @@ public class ExtendedRational extends Rational implements Cloneable{
             for (BasisSet innerBasis: src.data.keySet()){
                 Rational rat = data.get(outerBasis).multiply(src.get(innerBasis));
                 BasisSet nSet = outerBasis.multiply(innerBasis);
-                Rational old = hash.getOrDefault(nSet, new Rational(Rational.ONE));
+                Rational old = product.data.getOrDefault(nSet, new Rational(Rational.ONE));
                 //.replace doesn't work TODO: fix this
                 // RATIONALS POINT TO SAME OBJECT... AGAIN...
-                if(hash.containsKey(nSet)){
-                    //maybe add?
-                    hash.replace(nSet, rat.multiply(nSet.useRemainder()).add(old));
+                ExtendedRational remainder = nSet.useRemainder();
+                if(remainder.isRationalCastable()) {
+                    if (product.data.containsKey(nSet)) {
+                        //maybe add?
+                        product.data.replace(nSet, rat.multiply(nSet.useRemainder()).add(old));
+                    } else {
+                        //Nset remainder broken, needs fixing
+                        product.data.put(nSet, rat.multiply(old).multiply(nSet.useRemainder()));
+                    }
                 }
                 else{
-                    //Nset remainder broken, needs fixing
-                    hash.put(nSet, rat.multiply(old).multiply(nSet.useRemainder()));
+                    product = product.add(remainder.multiplyByBasis(nSet));
                 }
             }
         }
 
         data.remove(new BasisSet());
         src.data.remove(new BasisSet());
-        Rational newRational = multiplyRational((Rational) src);
-        newRational = newRational.add(hash.getOrDefault(new BasisSet(), Rational.ZERO));
-        hash.remove(new BasisSet());
-        return new ExtendedRational(newRational, hash);
+        Rational newRational = multiplyRational((Rational) src).add(product.data.getOrDefault(new BasisSet(), Rational.ZERO));
+        product.numerator = newRational.numerator;
+        product.denominator = newRational.denominator;
+        product.data.remove(new BasisSet());
+        product.prune();
+        return product;
     }
 
     // returns true if there are no irrational values in it
@@ -231,5 +337,20 @@ public class ExtendedRational extends Rational implements Cloneable{
             rat.data.put((BasisSet) ent.getKey().clone(),(Rational) ent.getValue().clone());
         }
         return rat;
+    }
+
+    //divider
+    public ExtendedRational divide(ExtendedRational src){
+        ExtendedRational minv = (ExtendedRational) src.clone();
+        for (Map.Entry<BasisSet, Rational> entry: minv.data.entrySet()) {
+            //Todo: setvalue modifies the maps
+            entry.setValue(entry.getValue().inverse());
+            Iterator<IBasisPart> it = entry.getKey().iterator();
+            while(it.hasNext()){
+                IBasisPart b = it.next();
+                b.addSilently(b.getValue().multiply(new Rational(BigInteger.valueOf(-2),BigInteger.ONE)));
+            }
+        }
+        return multiply(minv);
     }
 }

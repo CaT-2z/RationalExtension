@@ -95,4 +95,8 @@ public class Rational implements Cloneable{
         return new Rational( numerator,denominator);
     }
 
+    public Rational pow(int b){
+        return new Rational(numerator.pow(b),denominator.pow(b));
+    }
+
 }

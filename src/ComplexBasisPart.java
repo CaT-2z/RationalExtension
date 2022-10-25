@@ -155,6 +155,10 @@ public class ComplexBasisPart implements IBasisPart{
         }
     }
 
+    public String toString(){
+        return String.format(base.toString() + "^" + value.toString());
+    }
+
     /// implements clone, checks if inverse exists
     public Object clone(){
         ComplexBasisPart ret = new ComplexBasisPart();
