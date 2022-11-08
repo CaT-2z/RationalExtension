@@ -23,7 +23,7 @@ public class RootOfUnityBasisPart implements IBasisPart{
 
     @Override
     public Rational getValue() {
-        return null;
+        return value;
     }
 
     //Adds e to the fraction, returns with the rational leftover value, fraction stays within [0,1/2[
@@ -53,6 +53,10 @@ public class RootOfUnityBasisPart implements IBasisPart{
         RootOfUnityBasisPart ret = new RootOfUnityBasisPart();
         ret.value = value;
         return ret;
+    }
+
+    public String toString(){
+        return String.format("-1^" + value);
     }
 
     @Override

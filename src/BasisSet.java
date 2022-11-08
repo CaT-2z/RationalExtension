@@ -153,6 +153,11 @@ public class BasisSet extends AbstractSet<IBasisPart>
             return rem;
         }
         else{
+             if(src.getKey().equals(new BasisPartKey(BigInteger.valueOf(-1)))){
+                 ExtendedRational rem = src.addAndRemainder(Rational.ZERO);
+                 if(!src.getValue().equals(Rational.ZERO)) map.put(src.getKey(), src);
+                 return rem;
+             }
              if(!src.getValue().equals(Rational.ZERO)) map.put(src.getKey(), src);
         }
         return new ExtendedRational(Rational.ONE);
@@ -168,6 +173,7 @@ public class BasisSet extends AbstractSet<IBasisPart>
     //The set doesn't contain itself (obviously)
      public String toString(){
             StringBuilder sb = new StringBuilder();
+            sb.append('[');
             Iterator<Map.Entry<BasisPartKey, IBasisPart>> i = map.entrySet().iterator();
             if (! i.hasNext())
                 return "{}";
@@ -176,7 +182,7 @@ public class BasisSet extends AbstractSet<IBasisPart>
                 Map.Entry<BasisPartKey, IBasisPart> e = i.next();
                 BasisPartKey key = e.getKey();
                 IBasisPart value = e.getValue();
-                if(!value.equals(Rational.ZERO)) {
+                if(!value.getValue().equals(Rational.ZERO)) {
                     if(first) {
                         first = false;
                     }

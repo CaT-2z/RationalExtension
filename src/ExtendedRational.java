@@ -1,5 +1,7 @@
 package src;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.math.BigInteger;
 import java.util.*;
 import java.util.function.BiConsumer;
@@ -15,7 +17,8 @@ public class ExtendedRational extends Rational implements Cloneable{
     public ExtendedRational(Rational o){
         super(o);
         data = new HashMap<BasisSet, Rational>();
-        data.put(BasisSet.EMPTY, o);
+        ///TODO: This may break shit I hope it wont
+        //data.put(BasisSet.EMPTY, o);
     }
 
     // Pollard-Strassen algorithm for prime factorizationn
@@ -84,6 +87,7 @@ public class ExtendedRational extends Rational implements Cloneable{
         else {
             data.put(fin, newnum);
         }
+        prune();
     }
 
     ///\brief Creates root from extended rational
@@ -263,7 +267,9 @@ public class ExtendedRational extends Rational implements Cloneable{
         Iterator<Map.Entry<BasisSet, Rational>> it = data.entrySet().iterator();
         while(it.hasNext()){
             Map.Entry<BasisSet, Rational> entry = it.next();
-            if(entry.getValue().equals(Rational.ZERO)) it.remove();
+            if(entry.getValue().equals(Rational.ZERO)){
+                it.remove();
+            }
         }
     }
 
@@ -271,7 +277,7 @@ public class ExtendedRational extends Rational implements Cloneable{
     //TODO: empty BasisSets don't work
     // Maybe redo the rational part?
     //TODO: test equality
-    public ExtendedRational multiply(ExtendedRational src){
+    public ExtendedRational multiply(@NotNull ExtendedRational src){
 
         ///This should mitigate infinite loops
         if(src.isRationalCastable()) {
@@ -282,9 +288,12 @@ public class ExtendedRational extends Rational implements Cloneable{
         data.putIfAbsent(new BasisSet(BasisSet.EMPTY), new Rational(numerator, denominator));
         src.data.putIfAbsent(new BasisSet(BasisSet.EMPTY), new Rational(src.numerator, src.denominator));
 
-        for (BasisSet outerBasis: data.keySet()) {
-            for (BasisSet innerBasis: src.data.keySet()){
-                Rational rat = data.get(outerBasis).multiply(src.get(innerBasis));
+
+        for (Map.Entry<BasisSet, Rational> outerEntry: data.entrySet()){
+            BasisSet outerBasis = outerEntry.getKey();
+            for (Map.Entry<BasisSet, Rational> innerEntry: src.data.entrySet()){
+                BasisSet innerBasis = innerEntry.getKey();
+                Rational rat = outerEntry.getValue().multiply(innerEntry.getValue());
                 BasisSet nSet = outerBasis.multiply(innerBasis);
                 Rational old = product.data.getOrDefault(nSet, new Rational(Rational.ONE));
                 //.replace doesn't work TODO: fix this
@@ -293,10 +302,10 @@ public class ExtendedRational extends Rational implements Cloneable{
                 if(remainder.isRationalCastable()) {
                     if (product.data.containsKey(nSet)) {
                         //maybe add?
-                        product.data.replace(nSet, rat.multiply(nSet.useRemainder()).add(old));
+                        product.data.replace(nSet, rat.multiply(remainder.add(old)));
                     } else {
                         //Nset remainder broken, needs fixing
-                        product.data.put(nSet, rat.multiply(old).multiply(nSet.useRemainder()));
+                        product.data.put(nSet, rat.multiply(old).multiply(remainder));
                     }
                 }
                 else{
@@ -305,9 +314,33 @@ public class ExtendedRational extends Rational implements Cloneable{
             }
         }
 
+//        for (BasisSet outerBasis: data.keySet()) {
+//            for (BasisSet innerBasis: src.data.keySet()){
+//                Rational rat = data.get(outerBasis).multiply(src.get(innerBasis));
+//                BasisSet nSet = outerBasis.multiply(innerBasis);
+//                Rational old = product.data.getOrDefault(nSet, new Rational(Rational.ONE));
+//                //.replace doesn't work TODO: fix this
+//                // RATIONALS POINT TO SAME OBJECT... AGAIN...
+//                ExtendedRational remainder = nSet.useRemainder();
+//                if(remainder.isRationalCastable()) {
+//                    if (product.data.containsKey(nSet)) {
+//                        //maybe add?
+//                        product.data.replace(nSet, rat.multiply(nSet.useRemainder()).add(old));
+//                    } else {
+//                        //Nset remainder broken, needs fixing
+//                        product.data.put(nSet, rat.multiply(old).multiply(nSet.useRemainder()));
+//                    }
+//                }
+//                else{
+//                    product = product.add(remainder.multiplyByBasis(nSet));
+//                }
+//            }
+//        }
+
         data.remove(new BasisSet());
         src.data.remove(new BasisSet());
-        Rational newRational = multiplyRational((Rational) src).add(product.data.getOrDefault(new BasisSet(), Rational.ZERO));
+        ///Potential Fucky Wucky Rational part added twice
+        Rational newRational = Rational.ZERO.add(product.data.getOrDefault(new BasisSet(), Rational.ZERO));
         product.numerator = newRational.numerator;
         product.denominator = newRational.denominator;
         product.data.remove(new BasisSet());
@@ -352,5 +385,10 @@ public class ExtendedRational extends Rational implements Cloneable{
             }
         }
         return multiply(minv);
+    }
+
+    ///brief: Megkönnyíti a teszelést, intekből csinál egyszerű er-t
+    static public ExtendedRational fromSimple(int a, int b){
+        return new ExtendedRational(new Rational(BigInteger.valueOf(a), BigInteger.valueOf(b)));
     }
 }

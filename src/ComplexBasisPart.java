@@ -12,6 +12,13 @@ public class ComplexBasisPart implements IBasisPart{
     private ExtendedRational base;
     private ExtendedRational inverse;
 
+    public ExtendedRational getInverse() {
+        if(inverse == null){
+            findInverse();
+        }
+        return inverse;
+    }
+
     private Rational invScalar;
 
     ComplexBasisPart(){
@@ -79,7 +86,7 @@ public class ComplexBasisPart implements IBasisPart{
 
         /// List of "root" bases permutations
         /// Because Set doesn't have a getter
-        HashMap<Monoid, Monoid> monoids = new HashMap<Monoid, Monoid>();
+        HashMap<BasisPartKey, Monoid> monoids = new HashMap<BasisPartKey, Monoid>();
 
         ///Passes by reference, hopefully will be able to change value without hiccups.
         ///Puts monoids into the list
@@ -88,19 +95,17 @@ public class ComplexBasisPart implements IBasisPart{
 
 
         ///Showtime
-        ExtendedRational conj = new ExtendedRational(Rational.ONE);
-        boolean start = true;
-        ListIterator<Monoid> monoidIterator = monoids.keySet().stream().toList().listIterator();
-        recursiveMonoidMultiplier(monoidIterator, true, multiplier, conj);
+        inverse = new ExtendedRational(Rational.ONE);
+        isStarting = true;
+        ListIterator<Monoid> monoidIterator = monoids.values().stream().toList().listIterator();
+        recursiveMonoidMultiplier(monoidIterator, multiplier);
 
         ///May need to simplify by RootofUnity
         ///TODO: Put root of unity here
 
-        inverse = conj;
 
 
         /// This won't need a root of unity check I think-> It (should) all cancel out, but do check the edge case where E(zeta) = -1*rational
-        invScalar = (Rational) inverse.multiply(base);
 
         
     }
@@ -116,37 +121,48 @@ public class ComplexBasisPart implements IBasisPart{
     }
 
     ///\brief Helper function for inverse finder: finds the rational conjugate of the algebraic number
-    private void recursiveMonoidMultiplier(ListIterator<Monoid> it, boolean start, ExtendedRational multtiplier,  ExtendedRational multee){
+    /// WTF was I doing here?? How is this supposed to work??
+    /// The last one doesnt step forward... shouldnt step back
+    private boolean isStarting;
+    private void recursiveMonoidMultiplier(ListIterator<Monoid> it, ExtendedRational multiplier){
         if(it.hasNext()){
             Monoid monoid = it.next();
             for(int i = 0; i < monoid.searcher.getValue().denominator.intValue(); i++){
                 /// First go in, then change - permutations with null values
-                recursiveMonoidMultiplier(it, start, multtiplier, multee);
+                recursiveMonoidMultiplier(it, multiplier);
                 monoid.changeSubscriber();
-                it.previous();
             }
+            it.previous();
         }
         else{
-            if(!start){
+            ///TODO: START IS LOCAL, DOES NOT CHANGE
+            if(!isStarting){
                 /// multiply
-                /// TODO: mutable ExtendedRational multiplier OR wrapper
+                /// TODO: mutable ExtendedRational multiplier OR wrapper wtf?? WTF DID I MEAN BY THIS??
+                /// What am I multiplying and how does it get here
+                inverse = inverse.multiply(multiplier);
             }else{
-                start = false;
+                isStarting = false;
             }
         }
     }
 
-    private void recursiveMonoidSubscriber(Iterator<BasisSet> it, HashMap<Monoid, Monoid> monoids){
+    private void recursiveMonoidSubscriber(Iterator<BasisSet> it, HashMap<BasisPartKey, Monoid> monoids){
         while(it.hasNext()){
             BasisSet b = it.next();
             Iterator<IBasisPart> baseIt = b.iterator();
             while(baseIt.hasNext()){
+
                 IBasisPart part = baseIt.next();
+                if(part.getValue().equals(Rational.ZERO)) continue;
                 ///Subscribes/creates right monoid
                 ///Assumes there are no empty BasisSets
-                Monoid mon = new Monoid(part);
-                monoids.putIfAbsent(mon, mon);
-                monoids.get(mon).addSubscriber(b);
+                if(!monoids.containsKey(part.getKey())){
+                    monoids.put(part.getKey(), new Monoid(part));
+                }else{
+                    monoids.get(part.getKey()).addToPart(part);
+                }
+                monoids.get(part.getKey()).addSubscriber(b);
                 ///recurses if the base is also a ComplexBasisPart
                 if(part instanceof ComplexBasisPart){
                     recursiveMonoidSubscriber(((ComplexBasisPart) part).base.data.keySet().iterator(), monoids);
@@ -191,12 +207,22 @@ public class ComplexBasisPart implements IBasisPart{
     }
 
     ///\brief Helper class, helps permute through the gallois group of the Extended Rational (with redundancy).
-    public class Monoid implements Comparable<Monoid> {
+    private class Monoid implements Comparable<Monoid> {
         private ArrayList<BasisSet> subscriber;
         IBasisPart searcher;
 
+        Rational val;
+
         Monoid(IBasisPart n){
             searcher = n;
+            val = new Rational(Rational.ONE);
+            val.denominator = n.getValue().denominator;
+            subscriber = new ArrayList<>();
+        }
+
+        void addToPart(IBasisPart src){
+            BigInteger uj = val.denominator.multiply(src.getValue().denominator).divide(val.denominator.gcd(src.getValue().denominator));
+            val.denominator = uj;
         }
 
         ///\brief Adds a BasisSet to the list of subscibers.
@@ -219,6 +245,7 @@ public class ComplexBasisPart implements IBasisPart{
             }
             return searcher.getValue().denominator.compareTo(o.searcher.getValue().denominator);
         }
+
     }
 
 }
