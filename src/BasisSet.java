@@ -58,6 +58,7 @@ public class BasisSet extends AbstractSet<IBasisPart>
         for (IBasisPart b: o.map.values()) {
             a.remainder = a.remainder.multiply(a.addMultiplicative(b));
         }
+
         return a;
     }
 
@@ -153,12 +154,14 @@ public class BasisSet extends AbstractSet<IBasisPart>
             return rem;
         }
         else{
-             if(src.getKey().equals(new BasisPartKey(BigInteger.valueOf(-1)))){
-                 ExtendedRational rem = src.addAndRemainder(Rational.ZERO);
-                 if(!src.getValue().equals(Rational.ZERO)) map.put(src.getKey(), src);
+            IBasisPart clone = (IBasisPart) src.clone();
+             if(clone.getKey().equals(new BasisPartKey(BigInteger.valueOf(-1)))){
+                 /// Potentially poop
+                 ExtendedRational rem = clone.addAndRemainder(Rational.ZERO);
+                 if(!clone.getValue().equals(Rational.ZERO)) map.put(clone.getKey(), clone);
                  return rem;
              }
-             if(!src.getValue().equals(Rational.ZERO)) map.put(src.getKey(), src);
+             if(!clone.getValue().equals(Rational.ZERO)) map.put(clone.getKey(), clone);
         }
         return new ExtendedRational(Rational.ONE);
     }
@@ -268,5 +271,16 @@ public class BasisSet extends AbstractSet<IBasisPart>
             return 0;
         }
         return map.size() > o.map.size() ? 1 : -1;
+    }
+
+    @Override
+    public int hashCode(){
+        int result = 17;
+        int a = 0;
+        for (IBasisPart b: map.values()){
+            if(!b.getValue().equals(Rational.ZERO)) a++;
+        }
+        result = 31*result + a;
+        return result;
     }
 }

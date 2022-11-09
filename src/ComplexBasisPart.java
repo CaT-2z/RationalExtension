@@ -130,6 +130,7 @@ public class ComplexBasisPart implements IBasisPart{
             for(int i = 0; i < monoid.searcher.getValue().denominator.intValue(); i++){
                 /// First go in, then change - permutations with null values
                 recursiveMonoidMultiplier(it, multiplier);
+                ///TODO: Mit fuckery
                 monoid.changeSubscriber();
             }
             it.previous();
@@ -140,7 +141,7 @@ public class ComplexBasisPart implements IBasisPart{
                 /// multiply
                 /// TODO: mutable ExtendedRational multiplier OR wrapper wtf?? WTF DID I MEAN BY THIS??
                 /// What am I multiplying and how does it get here
-                inverse = inverse.multiply(multiplier);
+                inverse = inverse.multiply((ExtendedRational) multiplier.clone());
             }else{
                 isStarting = false;
             }

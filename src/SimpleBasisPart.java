@@ -51,7 +51,7 @@ public class SimpleBasisPart implements IBasisPart {
 
     /// implements cloneable, has immutable data fields.
     public Object clone(){
-        SimpleBasisPart p = new SimpleBasisPart(base, value);
+        SimpleBasisPart p = new SimpleBasisPart(base, (Rational) value.clone());
         return p;
     }
 

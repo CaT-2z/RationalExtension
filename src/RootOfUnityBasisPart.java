@@ -51,12 +51,12 @@ public class RootOfUnityBasisPart implements IBasisPart{
     @Override
     public Object clone() {
         RootOfUnityBasisPart ret = new RootOfUnityBasisPart();
-        ret.value = value;
+        ret.value = (Rational) value.clone();
         return ret;
     }
 
     public String toString(){
-        return String.format("-1^" + value);
+        return String.format("-1^" + value.divide(Rational.HALF));
     }
 
     @Override

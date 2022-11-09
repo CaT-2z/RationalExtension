@@ -294,6 +294,7 @@ public class ExtendedRational extends Rational implements Cloneable{
             for (Map.Entry<BasisSet, Rational> innerEntry: src.data.entrySet()){
                 BasisSet innerBasis = innerEntry.getKey();
                 Rational rat = outerEntry.getValue().multiply(innerEntry.getValue());
+                ///ITT
                 BasisSet nSet = outerBasis.multiply(innerBasis);
                 Rational old = product.data.getOrDefault(nSet, new Rational(Rational.ONE));
                 //.replace doesn't work TODO: fix this
@@ -302,10 +303,10 @@ public class ExtendedRational extends Rational implements Cloneable{
                 if(remainder.isRationalCastable()) {
                     if (product.data.containsKey(nSet)) {
                         //maybe add?
-                        product.data.replace(nSet, rat.multiply(remainder.add(old)));
+                        product.data.replace(nSet, old.add(rat.multiply(remainder)));
                     } else {
                         //Nset remainder broken, needs fixing
-                        product.data.put(nSet, rat.multiply(old).multiply(remainder));
+                        product.data.put(nSet, rat.multiply(remainder));
                     }
                 }
                 else{
