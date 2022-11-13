@@ -29,6 +29,14 @@ public class Rational implements Cloneable{
         denominator = denominate;
     }
 
+    public Rational(int numerate, @NotNull int denominate){
+        if(denominate == 0){
+            throw new ArithmeticException("0 in denominator exception");
+        }
+        numerator = BigInteger.valueOf(numerate);
+        denominator = BigInteger.valueOf(denominate);
+    }
+
     Rational(Rational o){
         numerator = o.numerator;
         denominator = o.denominator;

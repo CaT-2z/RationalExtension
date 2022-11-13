@@ -10,5 +10,7 @@ public interface IBasisPart extends Cloneable, Comparable<IBasisPart> {
     public Rational getValue();
 
     public Object clone();
+
+    public ExtendedRational toExtendedRational();
 }
 

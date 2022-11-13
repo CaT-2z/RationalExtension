@@ -55,6 +55,11 @@ public class RootOfUnityBasisPart implements IBasisPart{
         return ret;
     }
 
+    @Override
+    public ExtendedRational toExtendedRational() {
+        throw new RuntimeException("This shouldn't happen");
+    }
+
     public String toString(){
         return String.format("-1^" + value.divide(Rational.HALF));
     }

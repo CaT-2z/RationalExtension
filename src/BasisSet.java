@@ -54,6 +54,20 @@ public class BasisSet extends AbstractSet<IBasisPart>
             a.remainder = new ExtendedRational(new Rational(Rational.ONE));
         }
 
+        ComplexBasisPart comp;
+
+        ///If I ever refactor this shit Im going to fucking piss myself.
+        if((comp = a.isComplex()) != null){
+            for(IBasisPart b: o.map.values()){
+                if(!(b instanceof RootOfUnityBasisPart)){
+                    comp = comp.multiplyByPart(b);
+                } else {
+                    a.remainder = a.remainder.multiply(a.addMultiplicative(b));
+                }
+            }
+            a.addMultiplicative(comp);
+        }
+
         ///TODO: maybe remove 0s here
         for (IBasisPart b: o.map.values()) {
             a.remainder = a.remainder.multiply(a.addMultiplicative(b));
@@ -62,7 +76,12 @@ public class BasisSet extends AbstractSet<IBasisPart>
         return a;
     }
 
-
+    public ComplexBasisPart isComplex(){
+        for(IBasisPart b: map.values()){
+            if(b instanceof ComplexBasisPart) return (ComplexBasisPart) b;
+        }
+        return null;
+    }
 
 
     public ExtendedRational useRemainder(){
@@ -119,7 +138,7 @@ public class BasisSet extends AbstractSet<IBasisPart>
         if(map.containsKey(src.getKey())){
             return false;
         }
-        else map.put(src.getKey(), src);
+        else map.put(src.getKey(), (IBasisPart) src.clone());
         return true;
     }
 
@@ -154,6 +173,7 @@ public class BasisSet extends AbstractSet<IBasisPart>
             return rem;
         }
         else{
+
             IBasisPart clone = (IBasisPart) src.clone();
              if(clone.getKey().equals(new BasisPartKey(BigInteger.valueOf(-1)))){
                  /// Potentially poop

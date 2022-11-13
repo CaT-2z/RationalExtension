@@ -28,19 +28,18 @@ public class SimpleBasisPart implements IBasisPart {
         return new BasisPartKey(base);
     }
 
-    ///\brief Adds the rational to the value, and doesn't normalise
-    public void addSilent(Rational e){
-        value = value.add(e);
-    }
-
     //Adds e to the fraction, returns with the rational leftover value, fraction stays within [0,1[
     //DOESNT RETURN WITH THE SUM OF THE FRACTIONS
     //TODO: Maybe rename this to avoid confusion?
     public ExtendedRational addAndRemainder(Rational e){
+        ///Adds
         Rational sum = value.add(e);
+        ///Divides
         BigInteger[] div = sum.getNumerator().divideAndRemainder(sum.getDenominator());
+        ///knows the denominator will be the same
         value.denominator = sum.denominator;
         if(div[0].compareTo(BigInteger.ZERO) != -1 && div[1].compareTo(BigInteger.ZERO) != -1){
+            /// Modulo operation has negatives, we dont want that
             value.numerator = div[1];
             return new ExtendedRational(new Rational(base.pow(div[0].intValue()), BigInteger.ONE));
         }else{
@@ -53,6 +52,11 @@ public class SimpleBasisPart implements IBasisPart {
     public Object clone(){
         SimpleBasisPart p = new SimpleBasisPart(base, (Rational) value.clone());
         return p;
+    }
+
+    @Override
+    public ExtendedRational toExtendedRational() {
+        return ExtendedRational.fromSimple(base.intValue(), 1);
     }
 
     @Override

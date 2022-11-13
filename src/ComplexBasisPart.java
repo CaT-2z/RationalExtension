@@ -2,6 +2,7 @@ package src;
 
 import org.jetbrains.annotations.NotNull;
 
+import java.io.FilterOutputStream;
 import java.math.BigInteger;
 import java.util.*;
 
@@ -120,6 +121,25 @@ public class ComplexBasisPart implements IBasisPart{
         }
     }
 
+    ///HERE
+    public ComplexBasisPart multiplyByPart(IBasisPart part){
+        ExtendedRational ext = part.toExtendedRational();
+        BigInteger gcd = value.denominator.gcd(part.getValue().denominator);
+        BigInteger Aval = value.numerator.multiply(value.denominator.divide(gcd));
+        BigInteger Bval = part.getValue().numerator.multiply(part.getValue().denominator.divide(gcd));
+        BigInteger Rooter = value.denominator.multiply(part.getValue().denominator).divide(gcd);
+        ExtendedRational A = ExtendedRational.fromSimple(1,1);
+        for(int i = 0; i < Aval.intValue(); i++){
+            A = A.multiply(base);
+        }
+        for(int i = 0; i < Bval.intValue(); i++){
+            A = A.multiply(ext);
+        }
+        return new ComplexBasisPart(A, new Rational(BigInteger.ONE, Rooter));
+
+    }
+
+
     ///\brief Helper function for inverse finder: finds the rational conjugate of the algebraic number
     /// WTF was I doing here?? How is this supposed to work??
     /// The last one doesnt step forward... shouldnt step back
@@ -141,6 +161,7 @@ public class ComplexBasisPart implements IBasisPart{
                 /// multiply
                 /// TODO: mutable ExtendedRational multiplier OR wrapper wtf?? WTF DID I MEAN BY THIS??
                 /// What am I multiplying and how does it get here
+                System.out.println(" -- " + multiplier);
                 inverse = inverse.multiply((ExtendedRational) multiplier.clone());
             }else{
                 isStarting = false;
@@ -173,7 +194,7 @@ public class ComplexBasisPart implements IBasisPart{
     }
 
     public String toString(){
-        return String.format(base.toString() + "^" + value.toString());
+        return String.format("{|" + base.toString() + "|}" + "^" + value.toString());
     }
 
     /// implements clone, checks if inverse exists
@@ -187,6 +208,11 @@ public class ComplexBasisPart implements IBasisPart{
             ret.inverse = (ExtendedRational) inverse.clone();
         }
         return ret;
+    }
+
+    @Override
+    public ExtendedRational toExtendedRational() {
+        return (ExtendedRational) base.clone();
     }
 
     @Override

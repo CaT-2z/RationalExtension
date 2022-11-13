@@ -51,10 +51,10 @@ public class BasisPartKey implements Comparable<BasisPartKey>, Cloneable {
                         if (data.size() != o.data.size()) {
                                 return data.size() > o.data.size() ? 1 : -1;
                         }
-                        BasisPartKey[] a = (BasisPartKey[]) data.toArray();
-                        BasisPartKey[] b = (BasisPartKey[]) o.data.toArray();
-                        for (int i = 0; i < a.length; i++) {
-                                if (a[i].compareTo(b[i]) != 0) return a[i].compareTo(b[i]);
+                        ArrayList<BasisPartKey> a = data;
+                        ArrayList<BasisPartKey> b = o.data;
+                        for (int i = 0; i < a.size(); i++) {
+                                if (a.get(i).compareTo(b.get(i)) != 0) return a.get(i).compareTo(b.get(i));
                         }
                         return 0;
 
