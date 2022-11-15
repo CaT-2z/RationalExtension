@@ -250,6 +250,16 @@ public class ExtendedRational extends Rational implements Cloneable{
         return true;
     }
 
+    /// Gets negate
+    public ExtendedRational negate(){
+        Rational ratPart = super.negate();
+        ExtendedRational a = new ExtendedRational(ratPart);
+        for (Map.Entry<BasisSet, Rational> entry: data.entrySet()) {
+            a.data.put(entry.getKey(), entry.getValue().negate());
+        }
+        return a;
+    }
+
     @Override
     public Object clone(){
         ExtendedRational rat = new ExtendedRational();

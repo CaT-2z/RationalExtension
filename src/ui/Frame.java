@@ -5,7 +5,8 @@ import java.awt.*;
 
 public class Frame extends JFrame {
 
-    JTextField position = new JTextField(20);
+    DrawPanel panel;
+    JTextField position;
 
     public Frame(){
         super("Extended Rationals");
@@ -16,26 +17,30 @@ public class Frame extends JFrame {
         initComponents();
     }
 
-    enum state {
-        LINESTART,
-        LINEEND,
-        CIRCLESTART,
-        CIRCLEEND,
-    }
-
 
     private void initComponents(){
 
         this.setLayout(new BorderLayout());
-        DrawPanel panel = new DrawPanel();
+        panel = new DrawPanel();
+
+        position = new JTextField(20);
+
         panel.add(position, BorderLayout.SOUTH);
         add(panel, BorderLayout.CENTER);
         position.setEnabled(false);
         position.setDisabledTextColor(Color.BLACK);
         panel.addMouseListener(new MyMouseListener(this));
         JPanel buttonsPanel = new JPanel();
+
         JButton lineButt = new JButton("Line");
+        lineButt.addActionListener((e) -> panel.state = DrawPanel.State.LINESTART);
+
+        JButton circButt = new JButton("Circle");
+        circButt.addActionListener((e) -> panel.state = DrawPanel.State.CIRCLESTART);
+
+
         buttonsPanel.add(lineButt, BorderLayout.WEST);
+        buttonsPanel.add(circButt, BorderLayout.CENTER);
         add(buttonsPanel, BorderLayout.SOUTH);
     }
 

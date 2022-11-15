@@ -8,6 +8,16 @@ import java.util.ArrayList;
 
 class DrawPanel extends JPanel {
 
+    enum State {
+        NEUTRAL,
+        LINESTART,
+        LINEEND,
+        CIRCLESTART,
+        CIRCLEEND,
+    }
+
+    State state;
+
     Rational X1;
     Rational X2;
     Rational Y1;
@@ -20,10 +30,13 @@ class DrawPanel extends JPanel {
         Y2 = new Rational(1, 1);
 
         setSize(500, 500);
+        state = State.NEUTRAL;
 
     }
 
     public ArrayList<Line> lines = new ArrayList<>();
+
+    public ArrayList<Circle> circles = new ArrayList<>();
 
     private void drawWireFrame(Graphics g){
         ///Not important
@@ -81,6 +94,10 @@ class DrawPanel extends JPanel {
         for (Line l: lines) {
             g.drawLine(l.x1.toScreenSpace(X1, X2, getWidth()), l.y1.toScreenSpace(Y1, Y2, getHeight())
                     , l.x2.toScreenSpace(X1, X2, getWidth()), l.y2.toScreenSpace(Y1, Y2, getHeight()));
+        }
+        for (Circle c: circles){
+            g.drawOval(c.X.toScreenSpace(X1, X2, getWidth()), c.Y.toScreenSpace(Y1, Y2, getHeight())
+                    , c.r.add(X1).toScreenSpace(X1, X2, getWidth()), c.r.add(X1).toScreenSpace(X1, X2, getWidth()));
         }
 
     }
