@@ -8,27 +8,10 @@ import java.util.ArrayList;
 
 class DrawPanel extends JPanel {
 
-    private Rational X1;
-
-    public Rational getX1() {
-        return X1;
-    }
-
-    public Rational getX2() {
-        return X2;
-    }
-
-    public Rational getY1() {
-        return Y1;
-    }
-
-    public Rational getY2() {
-        return Y2;
-    }
-
-    private Rational X2;
-    private Rational Y1;
-    private Rational Y2;
+    Rational X1;
+    Rational X2;
+    Rational Y1;
+    Rational Y2;
 
     public DrawPanel(){
         X1 = new Rational(-3, 1);
@@ -36,9 +19,11 @@ class DrawPanel extends JPanel {
         Y1 = new Rational(-1, 1);
         Y2 = new Rational(1, 1);
 
+        setSize(500, 500);
+
     }
 
-    public ArrayList<Frame.line> lines = new ArrayList<>();
+    public ArrayList<Line> lines = new ArrayList<>();
 
     private void drawWireFrame(Graphics g){
         ///Not important
@@ -54,7 +39,6 @@ class DrawPanel extends JPanel {
         double Xend = X2.getNumerator().doubleValue() / X2.getDenominator().doubleValue();
         double Ystart = Y1.getNumerator().doubleValue() / Y1.getDenominator().doubleValue();
         double Yend = Y2.getNumerator().doubleValue() / Y2.getDenominator().doubleValue();
-
 
 
 
@@ -94,8 +78,9 @@ class DrawPanel extends JPanel {
             }
         }
         g.setColor(Color.RED);
-        for (Frame.line l: lines) {
-            g.drawLine(l.x1, l.y1, l.x2, l.y2);
+        for (Line l: lines) {
+            g.drawLine(l.x1.toScreenSpace(X1, X2, getWidth()), l.y1.toScreenSpace(Y1, Y2, getHeight())
+                    , l.x2.toScreenSpace(X1, X2, getWidth()), l.y2.toScreenSpace(Y1, Y2, getHeight()));
         }
 
     }

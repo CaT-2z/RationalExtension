@@ -107,4 +107,8 @@ public class Rational implements Cloneable{
         return new Rational(numerator.pow(b),denominator.pow(b));
     }
 
+    public double toDouble(){
+        return numerator.doubleValue() / denominator.doubleValue();
+    }
+
 }

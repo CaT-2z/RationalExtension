@@ -303,4 +303,8 @@ public class BasisSet extends AbstractSet<IBasisPart>
         result = 31*result + a;
         return result;
     }
+
+    public double toDouble(){
+        throw new RuntimeException("toDouble not yet implemented");
+    }
 }

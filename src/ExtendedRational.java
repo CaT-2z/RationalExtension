@@ -287,4 +287,22 @@ public class ExtendedRational extends Rational implements Cloneable{
         Rational point = end.add(start.negate()).multiply(new Rational(offs, size)).add(start);
         return new ExtendedRational(point);
     }
+
+    ///Gets double representation of rational
+    public double toDouble(){
+        double ret = 0;
+        for (Map.Entry<BasisSet, Rational> entry: data.entrySet()){
+            ret += entry.getValue().toDouble()*entry.getKey().toDouble();
+        }
+        ret += super.toDouble();
+        return ret;
+    }
+    ///Returns relative screen coordinates
+    ///Maybe this needs to be in a different place
+    public int toScreenSpace(Rational startRat, Rational endRat, int size){
+        double val = this.toDouble();
+        val -= startRat.toDouble();
+        val /= endRat.toDouble() - startRat.toDouble();
+        return (int) (val * size);
+    }
 }
