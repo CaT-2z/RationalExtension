@@ -30,6 +30,9 @@ public class Frame extends JFrame {
         position.setEnabled(false);
         position.setDisabledTextColor(Color.BLACK);
         panel.addMouseListener(new MyMouseListener(this));
+        panel.setFocusable(true);
+        panel.setRequestFocusEnabled(true);
+        panel.addKeyListener(new MyKeyListener());
         JPanel buttonsPanel = new JPanel();
 
         JButton lineButt = new JButton("Line");
@@ -38,9 +41,13 @@ public class Frame extends JFrame {
         JButton circButt = new JButton("Circle");
         circButt.addActionListener((e) -> panel.state = DrawPanel.State.CIRCLESTART);
 
+        JButton selButt = new JButton("Select");
+        selButt.addActionListener((e) -> panel.state = DrawPanel.State.SELECT);
+
 
         buttonsPanel.add(lineButt, BorderLayout.WEST);
         buttonsPanel.add(circButt, BorderLayout.CENTER);
+        buttonsPanel.add(selButt);
         add(buttonsPanel, BorderLayout.SOUTH);
     }
 

@@ -23,7 +23,9 @@ class MyMouseListener implements MouseListener {
             case LINEEND -> onLineEnd(e);
             case CIRCLESTART -> onCircleStart(e);
             case CIRCLEEND -> onCircleEnd(e);
+            case SELECT -> onSelect(e);
         }
+        e.getComponent().requestFocus();
     }
 
     private void onCircleEnd(MouseEvent e) {
@@ -106,4 +108,13 @@ class MyMouseListener implements MouseListener {
 
         ((DrawPanel)e.getComponent()).state = DrawPanel.State.NEUTRAL;
     }
+
+    public void onSelect(MouseEvent e){
+        DrawPanel panel = (DrawPanel) e.getComponent();
+        if(panel.SelectAt(e.getX(), e.getY())) panel.repaint();
+
+        ((DrawPanel)e.getComponent()).state = DrawPanel.State.NEUTRAL;
+
+    }
+
 }

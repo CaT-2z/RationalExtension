@@ -71,4 +71,8 @@ public class RootOfUnityBasisPart implements IBasisPart{
         }
         return -1;
     }
+
+    public double toDouble(){
+        return value.compareTo(Rational.HALF)>0 ? -1 : 1;
+    }
 }

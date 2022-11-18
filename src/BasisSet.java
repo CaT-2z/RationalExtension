@@ -306,6 +306,10 @@ public class BasisSet extends AbstractSet<IBasisPart>
 
     ///Do Base first
     public double toDouble(){
-        throw new RuntimeException("toDouble not yet implemented");
+        double ret = 1;
+        for (IBasisPart part: map.values()) {
+            ret *= part.toDouble();
+        }
+        return ret;
     }
 }

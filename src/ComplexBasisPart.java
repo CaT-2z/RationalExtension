@@ -275,4 +275,8 @@ public class ComplexBasisPart implements IBasisPart{
 
     }
 
+    public double toDouble(){
+        return Math.pow(base.toDouble(), value.toDouble());
+    }
+
 }

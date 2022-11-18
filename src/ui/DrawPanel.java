@@ -1,5 +1,6 @@
 package src.ui;
 
+import src.ExtendedRational;
 import src.Rational;
 
 import javax.swing.*;
@@ -14,7 +15,10 @@ class DrawPanel extends JPanel {
         LINEEND,
         CIRCLESTART,
         CIRCLEEND,
+        SELECT
     }
+
+    Object Selected = null;
 
     State state;
 
@@ -34,6 +38,34 @@ class DrawPanel extends JPanel {
 
     }
 
+    public boolean SelectAt(int x, int y){
+        for (Line l:lines) {
+         int ran = l.x2.toScreenSpace(X1,X2, getWidth()) - l.x1.toScreenSpace(X1, X2, getWidth());
+         int ls = x - l.x1.toScreenSpace(X1, X2, getWidth());
+         float at = ((float)ls)/ran;
+
+         int yran = l.y2.toScreenSpace(Y1, Y2, getHeight()) - l.y1.toScreenSpace(Y1, Y2, getHeight());
+         int diff = (int) (at*yran + l.y1.toScreenSpace(Y1, Y2, getHeight()) - y);
+         if(Math.abs(diff) < 5){
+             Selected = l;
+             return true;
+         }
+        }
+
+        double xVal = ExtendedRational.fromScreenSpace(X1, X2, getWidth(), x).toDouble();
+        double yVal = ExtendedRational.fromScreenSpace(Y1, Y2, getHeight(), y).toDouble();
+
+        for(Circle c: circles){
+            double dist = (xVal - c.X.toDouble())*(xVal - c.X.toDouble()) + (yVal - c.Y.toDouble())*(yVal - c.Y.toDouble());
+            if(dist - c.r.toDouble()*c.r.toDouble() < (X2.toDouble() - X1.toDouble())*5/getWidth()){
+                Selected = c;
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     public ArrayList<Line> lines = new ArrayList<>();
 
     public ArrayList<Circle> circles = new ArrayList<>();
@@ -48,6 +80,8 @@ class DrawPanel extends JPanel {
     @Override
     public void paintComponent(Graphics g){
         super.paintComponent(g);
+        Graphics2D g2 = (Graphics2D) g;
+        g2.setStroke(new BasicStroke(1));
         double Xstart = X1.getNumerator().doubleValue() / X1.getDenominator().doubleValue();
         double Xend = X2.getNumerator().doubleValue() / X2.getDenominator().doubleValue();
         double Ystart = Y1.getNumerator().doubleValue() / Y1.getDenominator().doubleValue();
@@ -90,15 +124,25 @@ class DrawPanel extends JPanel {
                 g.drawLine(0, Y, getHeight() + 20, Y);
             }
         }
+
+        g2.setStroke(new BasicStroke(2));
         g.setColor(Color.RED);
         for (Line l: lines) {
+            if(l.equals(Selected)) g.setColor(Color.BLUE);
             g.drawLine(l.x1.toScreenSpace(X1, X2, getWidth()), l.y1.toScreenSpace(Y1, Y2, getHeight())
                     , l.x2.toScreenSpace(X1, X2, getWidth()), l.y2.toScreenSpace(Y1, Y2, getHeight()));
+            g.setColor(Color.RED);
         }
         for (Circle c: circles){
-            g.drawOval(c.X.toScreenSpace(X1, X2, getWidth()), c.Y.toScreenSpace(Y1, Y2, getHeight())
-                    , c.r.add(X1).toScreenSpace(X1, X2, getWidth()), c.r.add(X1).toScreenSpace(X1, X2, getWidth()));
+            if(c.equals(Selected)) g.setColor(Color.BLUE);
+            int x = c.X.toScreenSpace(X1, X2, getWidth());
+            int y = c.Y.toScreenSpace(Y1, Y2, getHeight());
+            int rad = c.r.add(X1).toScreenSpace(X1, X2, getWidth());
+            g.drawOval(x-rad, y-rad
+                    , rad*2, rad*2);
+            g.setColor(Color.RED);
         }
+
 
     }
 

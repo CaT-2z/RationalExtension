@@ -72,4 +72,9 @@ public class SimpleBasisPart implements IBasisPart {
     public String toString(){
         return String.format(base.toString() + "^" + value.toString());
     }
+
+    @Override
+    public double toDouble() {
+        return Math.pow(base.doubleValue(), value.toDouble());
+    }
 }

@@ -18,8 +18,9 @@ public class Rational implements Cloneable{
 
     public static final Rational ONE = new Rational(BigInteger.ONE,BigInteger.ONE);
     public static final Rational ZERO = new Rational(BigInteger.ZERO, BigInteger.ONE);
-
     public static final Rational HALF = new Rational(BigInteger.ONE, BigInteger.TWO);
+
+    public static final Rational QUARTER = new Rational(BigInteger.ONE, BigInteger.valueOf(4));
 
     Rational(BigInteger numerate, @NotNull BigInteger denominate){
         if(denominate.compareTo(BigInteger.ZERO) == 0){

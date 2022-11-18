@@ -6,7 +6,7 @@
 //import java.util.*;
 //
 /////This will hurt
-//public class SimpleBasisSet implements Cloneable, Comparable<SimpleBasisSet>{
+//public class SimpleBasisSet implements Cloneable{
 //
 //    final static SimpleBasisSet EMPTY = new SimpleBasisSet();
 //    private HashMap<Integer, SimpleBasisPart> map;
@@ -25,11 +25,6 @@
 //        unity = new RootOfUnityBasisPart(p.unity.getValue());
 //    }
 //
-//    ///CompareTo
-//    @Override
-//    public int compareTo(@NotNull SimpleBasisSet o) {
-//        return 0;
-//    }
 //
 //    ///Equals function
 //    @Override
@@ -57,10 +52,17 @@
 //
 //
 //    ///multiply function: returns new BasisSet
-////    public IBasisSet multiply(IBasisSet o){
-////    }
+//    public IBasisSet multiply(IBasisSet o){
+//        if(o instanceof ComplexBasisSet){
+//            return o.multiply(this);
+//        }
 //
-//    public ExtendedRational useRemainder(){}
+//        return null;
+//    }
+//
+//    public ExtendedRational useRemainder(){
+//        return null;
+//    }
 //
 //
 //
