@@ -2,7 +2,7 @@ package src.ui;
 
 import src.ExtendedRational;
 
-public class Circle {
+public class Circle implements IDrawnObj{
     ExtendedRational X;
     ExtendedRational Y;
 
@@ -12,5 +12,10 @@ public class Circle {
         this.X = x;
         this.Y = y;
         this.r = r;
+    }
+
+    @Override
+    public ExtendedRational[] getIntersection(IDrawnObj obj) {
+        return null;
     }
 }

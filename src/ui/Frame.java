@@ -2,11 +2,16 @@ package src.ui;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionEvent;
 
 public class Frame extends JFrame {
 
     DrawPanel panel;
     JTextField position;
+
+    JPanel buttonsPanel;
+
+    JPanel backPanel;
 
     public Frame(){
         super("Extended Rationals");
@@ -15,6 +20,23 @@ public class Frame extends JFrame {
         setDefaultCloseOperation(EXIT_ON_CLOSE);
 
         initComponents();
+    }
+
+    boolean isSelected = false;
+    public void selectionPanel(){
+        if(isSelected){
+            remove(backPanel);
+            add(buttonsPanel, BorderLayout.SOUTH);
+            this.repaint();
+            validate();
+        }
+        else{
+            remove(buttonsPanel);
+            add(backPanel, BorderLayout.SOUTH);
+            this.repaint();
+            validate();
+        }
+        isSelected = !isSelected;
     }
 
 
@@ -33,7 +55,9 @@ public class Frame extends JFrame {
         panel.setFocusable(true);
         panel.setRequestFocusEnabled(true);
         panel.addKeyListener(new MyKeyListener());
-        JPanel buttonsPanel = new JPanel();
+        panel.addSelectionEventListener(this::selectionPanel);
+
+        buttonsPanel = new JPanel();
 
         JButton lineButt = new JButton("Line");
         lineButt.addActionListener((e) -> panel.state = DrawPanel.State.LINESTART);
@@ -49,6 +73,16 @@ public class Frame extends JFrame {
         buttonsPanel.add(circButt, BorderLayout.CENTER);
         buttonsPanel.add(selButt);
         add(buttonsPanel, BorderLayout.SOUTH);
+
+
+        backPanel = new JPanel();
+        JButton revert = new JButton("Go back");
+        JButton inters = new JButton("Intersection");
+        revert.addActionListener((e) -> selectionPanel());
+        inters.addActionListener((e) -> panel.state = DrawPanel.State.INTERSECT);
+        backPanel.add(revert, BorderLayout.CENTER);
+        backPanel.add(inters);
+
     }
 
 }

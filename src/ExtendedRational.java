@@ -275,17 +275,24 @@ public class ExtendedRational extends Rational implements Cloneable{
 
     //divider
     public ExtendedRational divide(ExtendedRational src){
-        ExtendedRational minv = (ExtendedRational) src.clone();
-        for (Map.Entry<BasisSet, Rational> entry: minv.data.entrySet()) {
-            //Todo: setvalue modifies the maps
-            entry.setValue(entry.getValue().inverse());
-            Iterator<IBasisPart> it = entry.getKey().iterator();
-            while(it.hasNext()){
-                IBasisPart b = it.next();
-                b.addSilently(b.getValue().multiply(new Rational(BigInteger.valueOf(-2),BigInteger.ONE)));
+        if(src.isRationalCastable()) {
+            return multiplyRational(((Rational) src).inverse());
+        }
+        if(src.data.size() == 1){
+            ExtendedRational minv = (ExtendedRational) src.clone();
+            for (Map.Entry<BasisSet, Rational> entry: data.entrySet()) {
+                entry.setValue(entry.getValue().inverse());
+                for (IBasisPart iBasisPart : entry.getKey()) {
+                    Iterator<IBasisPart> it = entry.getKey().iterator();
+                    while(it.hasNext()){
+                        IBasisPart b = it.next();
+                        b.addSilently(b.getValue().multiply(new Rational(BigInteger.valueOf(-2),BigInteger.ONE)));
+                    }
+                }
+                multiply(minv);
             }
         }
-        return multiply(minv);
+        throw new RuntimeException("Port out the inverse function");
     }
 
     ///brief: Megkönnyíti a teszelést, intekből csinál egyszerű er-t

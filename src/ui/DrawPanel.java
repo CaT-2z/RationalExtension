@@ -5,6 +5,7 @@ import src.Rational;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionListener;
 import java.util.ArrayList;
 
 class DrawPanel extends JPanel {
@@ -15,10 +16,11 @@ class DrawPanel extends JPanel {
         LINEEND,
         CIRCLESTART,
         CIRCLEEND,
-        SELECT
+        SELECT,
+        INTERSECT
     }
 
-    Object Selected = null;
+    IDrawnObj Selected = null;
 
     State state;
 
@@ -26,6 +28,15 @@ class DrawPanel extends JPanel {
     Rational X2;
     Rational Y1;
     Rational Y2;
+
+
+    interface voidFunc{
+        public void accept();
+    }
+    voidFunc selectionListener;
+    public void addSelectionEventListener(voidFunc e){
+        selectionListener = e;
+    }
 
     public DrawPanel(){
         X1 = new Rational(-3, 1);
@@ -57,7 +68,7 @@ class DrawPanel extends JPanel {
 
         for(Circle c: circles){
             double dist = (xVal - c.X.toDouble())*(xVal - c.X.toDouble()) + (yVal - c.Y.toDouble())*(yVal - c.Y.toDouble());
-            if(dist - c.r.toDouble()*c.r.toDouble() < (X2.toDouble() - X1.toDouble())*5/getWidth()){
+            if(Math.abs(dist - c.r.toDouble()*c.r.toDouble()) < (X2.toDouble() - X1.toDouble())*5/getWidth()){
                 Selected = c;
                 return true;
             }
@@ -68,6 +79,7 @@ class DrawPanel extends JPanel {
 
     public ArrayList<Line> lines = new ArrayList<>();
 
+    public ArrayList<MyDot> points = new ArrayList<>();
     public ArrayList<Circle> circles = new ArrayList<>();
 
     private void drawWireFrame(Graphics g){
@@ -141,6 +153,12 @@ class DrawPanel extends JPanel {
             g.drawOval(x-rad, y-rad
                     , rad*2, rad*2);
             g.setColor(Color.RED);
+        }
+
+        for(MyDot dot: points){
+            int x = dot.x.toScreenSpace(X1, X2, getWidth());
+            int y = dot.y.toScreenSpace(Y1, Y2, getHeight());
+            g.drawRect(x-1, y-2, 2, 2);
         }
 
 

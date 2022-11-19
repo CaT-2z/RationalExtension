@@ -3,6 +3,7 @@ package src.ui;
 import src.ExtendedRational;
 
 import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 
@@ -24,6 +25,7 @@ class MyMouseListener implements MouseListener {
             case CIRCLESTART -> onCircleStart(e);
             case CIRCLEEND -> onCircleEnd(e);
             case SELECT -> onSelect(e);
+            case INTERSECT -> onIntersection(e);
         }
         e.getComponent().requestFocus();
     }
@@ -111,9 +113,31 @@ class MyMouseListener implements MouseListener {
 
     public void onSelect(MouseEvent e){
         DrawPanel panel = (DrawPanel) e.getComponent();
-        if(panel.SelectAt(e.getX(), e.getY())) panel.repaint();
+        if(panel.SelectAt(e.getX(), e.getY())){
+            panel.repaint();
+            ((DrawPanel)e.getComponent()).selectionListener.accept();
+            ((DrawPanel)e.getComponent()).state = DrawPanel.State.NEUTRAL;
+        }
+    }
 
-        ((DrawPanel)e.getComponent()).state = DrawPanel.State.NEUTRAL;
+    public void onIntersection(MouseEvent e){
+        DrawPanel panel = (DrawPanel) e.getComponent();
+        IDrawnObj sel = panel.Selected;
+        if(panel.SelectAt(e.getX(), e.getY())){
+            ExtendedRational[] inter = sel.getIntersection(panel.Selected);
+            if(inter != null){
+                frame.position.setText("{" + inter[0] + "},{" + inter[1] + "}");
+                panel.points.add(new MyDot(inter[0], inter[1]));
+                panel.repaint();
+                panel.state = DrawPanel.State.NEUTRAL;
+            }
+            else{
+                panel.Selected = sel;
+                frame.position.setText("Not Found");
+            }
+        }else{
+            frame.position.setText("Nothing selected");
+        }
 
     }
 
