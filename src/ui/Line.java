@@ -4,7 +4,7 @@ package src.ui;
 
 import src.ExtendedRational;
 
-class Line implements IDrawnObj{
+public class Line implements IDrawnObj{
     ExtendedRational x1;
     ExtendedRational x2;
     ExtendedRational y1;
@@ -24,12 +24,18 @@ class Line implements IDrawnObj{
         }
     }
 
-    ExtendedRational[] slope(){
+    public ExtendedRational[] slope(){
         ExtendedRational xran = x2.add(x1.negate());
         ExtendedRational yran = y2.add(y1.negate());
         ExtendedRational slope = yran.divide(xran);
-        ExtendedRational offset = slope.multiply(x1).add(y1.negate());
+        ExtendedRational offset = y1.add(slope.multiply(x1).negate());
         return new ExtendedRational[] {slope, offset};
+    }
+
+    public ExtendedRational yAt(ExtendedRational x){
+        if(x.toDouble() < x1.toDouble() || x.toDouble() > x2.toDouble()) return null;
+        ExtendedRational[] sl = slope();
+        return sl[0].multiply(x).add(sl[1]);
     }
 
 
@@ -39,13 +45,17 @@ class Line implements IDrawnObj{
             Line l = (Line) obj;
             ExtendedRational[] can1 = slope();
             ExtendedRational[] can2 = l.slope();
-            ExtendedRational x = can2[1].add(can1[1]);
+            ExtendedRational x = can2[1].add(can1[1].negate());
             ExtendedRational z = can1[0].add(can2[0].negate());
             x = x.divide(z);
             double d = x.toDouble();
             if( d >= x1.toDouble() && d <= x2.toDouble() && d >= l.x1.toDouble() && d <= l.x2.toDouble()){
                 return new ExtendedRational[] {x, can1[0].multiply(x).add(can1[1])};
             } else return null;
+        }
+
+        if(obj instanceof Circle){
+            return ((Circle)obj).getLineIntersection(this);
         }
         return null;
     }

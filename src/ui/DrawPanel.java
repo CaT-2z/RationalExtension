@@ -6,9 +6,10 @@ import src.Rational;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionListener;
+import java.io.Serializable;
 import java.util.ArrayList;
 
-class DrawPanel extends JPanel {
+class DrawPanel extends JPanel implements Serializable {
 
     enum State {
         NEUTRAL,
@@ -39,10 +40,10 @@ class DrawPanel extends JPanel {
     }
 
     public DrawPanel(){
-        X1 = new Rational(-3, 1);
-        X2 = new Rational(-1, 1);
-        Y1 = new Rational(-1, 1);
-        Y2 = new Rational(1, 1);
+        X1 = new Rational(0, 1);
+        X2 = new Rational(2, 1);
+        Y1 = new Rational(0, 1);
+        Y2 = new Rational(2, 1);
 
         setSize(500, 500);
         state = State.NEUTRAL;
@@ -68,7 +69,7 @@ class DrawPanel extends JPanel {
 
         for(Circle c: circles){
             double dist = (xVal - c.X.toDouble())*(xVal - c.X.toDouble()) + (yVal - c.Y.toDouble())*(yVal - c.Y.toDouble());
-            if(Math.abs(dist - c.r.toDouble()*c.r.toDouble()) < (X2.toDouble() - X1.toDouble())*5/getWidth()){
+            if(Math.abs(dist - c.r.toDouble()*c.r.toDouble()) < (X2.toDouble() - X1.toDouble())*10/getWidth()){
                 Selected = c;
                 return true;
             }
@@ -156,9 +157,10 @@ class DrawPanel extends JPanel {
         }
 
         for(MyDot dot: points){
+            g.setColor(Color.MAGENTA);
             int x = dot.x.toScreenSpace(X1, X2, getWidth());
             int y = dot.y.toScreenSpace(Y1, Y2, getHeight());
-            g.drawRect(x-1, y-2, 2, 2);
+            g.fillOval(x-5, y-5, 10, 10);
         }
 
 

@@ -128,8 +128,10 @@ class MyMouseListener implements MouseListener {
             if(inter != null){
                 frame.position.setText("{" + inter[0] + "},{" + inter[1] + "}");
                 panel.points.add(new MyDot(inter[0], inter[1]));
+                panel.Selected = null;
                 panel.repaint();
                 panel.state = DrawPanel.State.NEUTRAL;
+                panel.selectionListener.accept();
             }
             else{
                 panel.Selected = sel;
