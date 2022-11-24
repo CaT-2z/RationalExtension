@@ -3,6 +3,7 @@ package src.ui;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
+import java.io.*;
 
 public class Frame extends JFrame {
 
@@ -59,6 +60,9 @@ public class Frame extends JFrame {
 
         buttonsPanel = new JPanel();
 
+        JButton loadButt = new JButton("Load");
+        loadButt.addActionListener((e) -> loadConf());
+
         JButton lineButt = new JButton("Line");
         lineButt.addActionListener((e) -> panel.state = DrawPanel.State.LINESTART);
 
@@ -68,7 +72,12 @@ public class Frame extends JFrame {
         JButton selButt = new JButton("Select");
         selButt.addActionListener((e) -> panel.state = DrawPanel.State.SELECT);
 
+        JButton savButt = new JButton("Save");
+        savButt.addActionListener((e) -> saveConf());
 
+
+        buttonsPanel.add(savButt);
+        buttonsPanel.add(loadButt);
         buttonsPanel.add(lineButt, BorderLayout.WEST);
         buttonsPanel.add(circButt, BorderLayout.CENTER);
         buttonsPanel.add(selButt);
@@ -77,12 +86,74 @@ public class Frame extends JFrame {
 
         backPanel = new JPanel();
         JButton revert = new JButton("Go back");
+        revert.addActionListener((e) -> panel.fuckGoBack());
+
         JButton inters = new JButton("Intersection");
-        revert.addActionListener((e) -> selectionPanel());
         inters.addActionListener((e) -> panel.state = DrawPanel.State.INTERSECT);
+
+        JButton deler = new JButton("Delete");
+        deler.addActionListener((e) -> panel.deleteThis() );
+
         backPanel.add(revert, BorderLayout.CENTER);
+
         backPanel.add(inters);
 
+        backPanel.add(deler);
+
+    }
+
+    private void saveConf(){
+        FileOutputStream os = null;
+        try {
+            os = new FileOutputStream("write.piss");
+        } catch (FileNotFoundException e) {
+            throw new RuntimeException(e);
+        }
+        ObjectOutputStream obj = null;
+        try {
+            obj = new ObjectOutputStream(os);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        try {
+            obj.writeObject(panel);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        try {
+            obj.close();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private void loadConf(){
+        FileInputStream is = null;
+        try {
+            is = new FileInputStream("write.piss");
+        } catch (FileNotFoundException e) {
+            throw new RuntimeException(e);
+        }
+        ObjectInputStream obj = null;
+        try {
+            obj = new ObjectInputStream(is);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        remove(panel);
+        try {
+            panel = (DrawPanel) obj.readObject();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        } catch (ClassNotFoundException e) {
+            throw new RuntimeException(e);
+        }
+        add(panel, BorderLayout.CENTER);
+        panel.addSelectionEventListener(this::selectionPanel);
+        panel.repaint();
+        repaint();
     }
 
 }

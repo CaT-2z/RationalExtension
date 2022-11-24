@@ -19,6 +19,14 @@ class MyMouseListener implements MouseListener {
 
     @Override
     public void mouseClicked(MouseEvent e) {
+        int x = e.getX();
+        int y = e.getY();
+        DrawPanel panel = (DrawPanel) e.getComponent();
+        ExtendedRational xpos = ExtendedRational.fromScreenSpace(panel.X1, panel.X2, panel.getWidth(), x);
+        ExtendedRational ypos = ExtendedRational.fromScreenSpace(panel.Y1, panel.Y2, panel.getHeight(), y);
+        frame.position.setText("{" + xpos + "},{" + ypos + "}");
+
+
         switch (((DrawPanel)e.getComponent()).state){
             case LINESTART -> onLineStart(e);
             case LINEEND -> onLineEnd(e);
@@ -36,7 +44,6 @@ class MyMouseListener implements MouseListener {
         DrawPanel panel = (DrawPanel) e.getComponent();
         ExtendedRational xpos = ExtendedRational.fromScreenSpace(panel.X1, panel.X2, panel.getWidth(), x);
         ExtendedRational ypos = ExtendedRational.fromScreenSpace(panel.Y1, panel.Y2, panel.getHeight(), y);
-        frame.position.setText("{" + xpos + "},{" + ypos + "}");
 
         ExtendedRational xDist = x1.negate().add(xpos);
         ExtendedRational yDist = y1.negate().add(ypos);
@@ -54,7 +61,6 @@ class MyMouseListener implements MouseListener {
         DrawPanel panel = (DrawPanel) e.getComponent();
         ExtendedRational xpos = ExtendedRational.fromScreenSpace(panel.X1, panel.X2, panel.getWidth(), x);
         ExtendedRational ypos = ExtendedRational.fromScreenSpace(panel.Y1, panel.Y2, panel.getHeight(), y);
-        frame.position.setText("{" + xpos + "},{" + ypos + "}");
         x1 = xpos;
         y1 = ypos;
 
@@ -89,7 +95,6 @@ class MyMouseListener implements MouseListener {
         DrawPanel panel = (DrawPanel) e.getComponent();
         ExtendedRational xpos = ExtendedRational.fromScreenSpace(panel.X1, panel.X2, panel.getWidth(), x);
         ExtendedRational ypos = ExtendedRational.fromScreenSpace(panel.Y1, panel.Y2, panel.getHeight(), y);
-        frame.position.setText("{" + xpos + "},{" + ypos + "}");
         x1 = xpos;
         y1 = ypos;
 
@@ -102,7 +107,6 @@ class MyMouseListener implements MouseListener {
         DrawPanel panel = (DrawPanel) e.getComponent();
         ExtendedRational xpos = ExtendedRational.fromScreenSpace(panel.X1, panel.X2, panel.getWidth(), x);
         ExtendedRational ypos = ExtendedRational.fromScreenSpace(panel.Y1, panel.Y2, panel.getHeight(), y);
-        frame.position.setText("{" + xpos + "},{" + ypos + "}");
 
             ((DrawPanel) e.getComponent()).lines.add(new Line(x1, y1, xpos, ypos));
 

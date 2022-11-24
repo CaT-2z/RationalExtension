@@ -9,7 +9,20 @@ import java.awt.event.ActionListener;
 import java.io.Serializable;
 import java.util.ArrayList;
 
-class DrawPanel extends JPanel implements Serializable {
+class DrawPanel extends JPanel implements Serializable{
+
+    public void deleteThis() {
+        lines.remove(Selected);
+        circles.remove(Selected);
+        points.remove(Selected);
+        fuckGoBack();
+    }
+
+    public void fuckGoBack() {
+        Selected = null;
+        selectionListener.accept();
+        repaint();
+    }
 
     enum State {
         NEUTRAL,
@@ -34,7 +47,7 @@ class DrawPanel extends JPanel implements Serializable {
     interface voidFunc{
         public void accept();
     }
-    voidFunc selectionListener;
+    transient voidFunc selectionListener;
     public void addSelectionEventListener(voidFunc e){
         selectionListener = e;
     }

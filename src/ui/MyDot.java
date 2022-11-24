@@ -2,7 +2,9 @@ package src.ui;
 
 import src.ExtendedRational;
 
-public class MyDot {
+import java.io.Serializable;
+
+public class MyDot implements Serializable {
 
     ExtendedRational x;
 

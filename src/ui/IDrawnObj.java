@@ -2,6 +2,8 @@ package src.ui;
 
 import src.ExtendedRational;
 
-public interface IDrawnObj {
+import java.io.Serializable;
+
+public interface IDrawnObj extends Serializable {
     public ExtendedRational[] getIntersection(IDrawnObj obj);
 }

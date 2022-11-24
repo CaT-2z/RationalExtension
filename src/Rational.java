@@ -2,10 +2,11 @@ package src;
 
 import org.jetbrains.annotations.NotNull;
 
+import java.io.Serializable;
 import java.math.BigInteger;
 
 //TODO: gcd with Rational.ZERO is weird;
-public class Rational implements Cloneable{
+public class Rational implements Cloneable, Serializable {
     protected BigInteger numerator;
     protected BigInteger denominator;
 
