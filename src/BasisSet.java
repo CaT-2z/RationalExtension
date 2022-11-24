@@ -240,7 +240,7 @@ public class BasisSet extends AbstractSet<IBasisPart>
                 set.map.remove(i);
             }
             for (BasisPartKey i: set.map.keySet()){
-                if(!((Rational)set.map.get(i)).equals(Rational.ZERO)) return false;
+                if(!(set.map.get(i)).getValue().equals(Rational.ZERO)) return false;
             }
             return true;
         }

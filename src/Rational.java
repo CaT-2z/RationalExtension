@@ -83,13 +83,29 @@ public class Rational implements Cloneable{
     }
 
     public Rational simplify(){
+        BigInteger newnum = numerator;
+        BigInteger newdet = denominator;
+
+        if(numerator.bitLength() > 32 && denominator.bitLength() > 32){
+//            BigInteger[] simple = numerator.divideAndRemainder(denominator);
+//            BigInteger val = simple[1].divide(BigInteger.valueOf(1000));
+//            BigInteger den = denominator.divide(BigInteger.valueOf(1000));
+//            newnum = val.add(den.multiply(simple[0]));
+//            newdet = den;
+            double val = numerator.doubleValue()/denominator.doubleValue();
+            val *= 100000;
+            newnum = BigInteger.valueOf((long)val);
+            newdet = BigInteger.valueOf(100000);
+        }
+
+
         BigInteger gcd;
-        if(numerator.compareTo(BigInteger.ZERO) == 0){
+        if(newnum.compareTo(BigInteger.ZERO) == 0){
             return Rational.ZERO;
         } else{
-            gcd = numerator.gcd(denominator);
+            gcd = newnum.gcd(newdet);
         }
-        return new Rational(numerator.divide(gcd), denominator.divide(gcd));
+        return new Rational(newnum.divide(gcd), newdet.divide(gcd));
     }
 
     public boolean equals(Rational src){

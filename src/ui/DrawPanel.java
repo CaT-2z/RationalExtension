@@ -41,9 +41,9 @@ class DrawPanel extends JPanel implements Serializable {
 
     public DrawPanel(){
         X1 = new Rational(0, 1);
-        X2 = new Rational(2, 1);
+        X2 = new Rational(5, 1);
         Y1 = new Rational(0, 1);
-        Y2 = new Rational(2, 1);
+        Y2 = new Rational(5, 1);
 
         setSize(500, 500);
         state = State.NEUTRAL;

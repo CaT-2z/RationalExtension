@@ -127,7 +127,9 @@ class MyMouseListener implements MouseListener {
             ExtendedRational[] inter = sel.getIntersection(panel.Selected);
             if(inter != null){
                 frame.position.setText("{" + inter[0] + "},{" + inter[1] + "}");
-                panel.points.add(new MyDot(inter[0], inter[1]));
+                for(int i = 0; i < inter.length/2; i++){
+                    panel.points.add(new MyDot(inter[2*i], inter[2*i+1]));
+                }
                 panel.Selected = null;
                 panel.repaint();
                 panel.state = DrawPanel.State.NEUTRAL;

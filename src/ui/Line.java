@@ -33,9 +33,13 @@ public class Line implements IDrawnObj{
     }
 
     public ExtendedRational yAt(ExtendedRational x){
-        if(x.toDouble() < x1.toDouble() || x.toDouble() > x2.toDouble()) return null;
+//        if(x.toDouble() < x1.toDouble() || x.toDouble() > x2.toDouble()) return null;
         ExtendedRational[] sl = slope();
-        return sl[0].multiply(x).add(sl[1]);
+        return yAt(sl, x);
+    }
+
+    public static ExtendedRational yAt(ExtendedRational[] slope, ExtendedRational x){
+        return slope[0].multiply(x).add(slope[1]);
     }
 
 

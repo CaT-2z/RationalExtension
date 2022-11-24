@@ -36,6 +36,9 @@ public class Utils {
 
     static ArrayList<BigInteger> factor(BigInteger n) {
         ArrayList<BigInteger> factors = new ArrayList<BigInteger>();
+        if(n.bitLength() > 32){
+            n = n.shiftRight(n.bitLength() - 32);
+        }
         while (true) {
             BigInteger i = findFactor(n);
             if (i.compareTo(BigInteger.ONE) == 0) {
