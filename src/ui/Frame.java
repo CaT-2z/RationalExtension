@@ -2,18 +2,36 @@ package src.ui;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
 import java.io.*;
 
+/**
+ * A program kerete
+ */
 public class Frame extends JFrame {
 
+    /**
+     * A rajztábla
+     */
     DrawPanel panel;
+
+    /**
+     * A kiválasztott koordináta mutató
+     */
     JTextField position;
 
+    /**
+     * Az alap bgombokat tartalmazó tábla.
+     */
     JPanel buttonsPanel;
 
+    /**
+     * A kontextus gombokat tartalmazó tábla.
+     */
     JPanel backPanel;
 
+    /**
+     * Konstruktor
+     */
     public Frame(){
         super("Extended Rationals");
         setSize(500, 500);
@@ -23,7 +41,14 @@ public class Frame extends JFrame {
         initComponents();
     }
 
+    /**
+     * Kontextus specifikus módban van-e.
+     */
     boolean isSelected = false;
+
+    /**
+     * Vált normál és kontextus specifikus mód közt.
+     */
     public void selectionPanel(){
         if(isSelected){
             remove(backPanel);
@@ -41,6 +66,9 @@ public class Frame extends JFrame {
     }
 
 
+    /**
+     * Inicializálja a komponenseket.
+     */
     private void initComponents(){
 
         this.setLayout(new BorderLayout());
@@ -86,7 +114,7 @@ public class Frame extends JFrame {
 
         backPanel = new JPanel();
         JButton revert = new JButton("Go back");
-        revert.addActionListener((e) -> panel.fuckGoBack());
+        revert.addActionListener((e) -> panel.GoBack());
 
         JButton inters = new JButton("Intersection");
         inters.addActionListener((e) -> panel.state = DrawPanel.State.INTERSECT);
@@ -102,10 +130,13 @@ public class Frame extends JFrame {
 
     }
 
+    /**
+     * Elmenti a rajztáblát egy fájlba.
+     */
     private void saveConf(){
         FileOutputStream os = null;
         try {
-            os = new FileOutputStream("write.piss");
+            os = new FileOutputStream("save.alg");
         } catch (FileNotFoundException e) {
             throw new RuntimeException(e);
         }
@@ -129,10 +160,13 @@ public class Frame extends JFrame {
         }
     }
 
+    /**
+     * Beolvassa a rajztáblát egy fájlból.
+     */
     private void loadConf(){
         FileInputStream is = null;
         try {
-            is = new FileInputStream("write.piss");
+            is = new FileInputStream("save.alg");
         } catch (FileNotFoundException e) {
             throw new RuntimeException(e);
         }

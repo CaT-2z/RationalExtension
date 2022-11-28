@@ -13,10 +13,17 @@ import java.util.stream.Stream;
 
 /// Maybe I should remove remainder based stuff
 /// Remainder is needed because
+
+/**
+ * Egy bázist reprezentáló osztály.
+ */
 public class BasisSet extends AbstractSet<IBasisPart>
     implements Set<IBasisPart>, Cloneable, java.io.Serializable, Comparable<BasisSet>{
 
 
+    /**
+     * Az "üres" bázis: az 1-el való szorzást jelképezi.
+     */
     final static BasisSet EMPTY = new BasisSet();
 
 //    @java.io.Serial
@@ -24,18 +31,31 @@ public class BasisSet extends AbstractSet<IBasisPart>
 
     //What constitutes as equal depends on whether its addition or multiplication, therefore it uses a map that.. what??
     //Yes so one BasisSet is one base, but the naming convention is crap I know
+
+    /**
+     * A bázisrészeket tartalmazó gyűjtemény
+     */
     private transient HashMap<BasisPartKey, IBasisPart> map;
 
+    /**
+     * Egy szorzás utáni racionálisrész maradék.
+     */
     private ExtendedRational remainder;
 
-    private static final Object PRESENT = new Object();
-
+    /**
+     * Üres konstruktor
+     */
     public BasisSet(){
         map = new HashMap<BasisPartKey, IBasisPart>();
         remainder = new ExtendedRational(Rational.ONE);
     }
 
     /// fixed shallow copy
+
+    /**
+     * Másoló konstruktor
+     * @param o másolandó
+     */
     public BasisSet(BasisSet o) {
         map = (HashMap<BasisPartKey, IBasisPart>) o.map.clone();
         remainder = o.remainder;
@@ -44,6 +64,12 @@ public class BasisSet extends AbstractSet<IBasisPart>
 
     //Creates new BasisSet, the Rational part is in the remainder, uses both parents remainder, don't forget to purge remainder
     //CREATES NEW!!!! BASIS SET!!!
+
+    /**
+     * Szorzó függvény. Vér, verejték és az Isteni jóindulat tartja össze.
+     * @param o szorzandó
+     * @return szorzat
+     */
     public BasisSet multiply(BasisSet o) {
         BasisSet a = (BasisSet) this.clone();
         if (!remainder.equals(Rational.ONE) || !o.remainder.equals(Rational.ONE) ) {
@@ -76,6 +102,10 @@ public class BasisSet extends AbstractSet<IBasisPart>
         return a;
     }
 
+    /**
+     * Visszaadja, hogy tartalmaz-e komplex bázist.
+     * @return tartalmaz-e.
+     */
     public ComplexBasisPart isComplex(){
         for(IBasisPart b: map.values()){
             if(b instanceof ComplexBasisPart) return (ComplexBasisPart) b;
@@ -84,6 +114,10 @@ public class BasisSet extends AbstractSet<IBasisPart>
     }
 
 
+    /**
+     * A szorzás során felhalmozódott racionális maradékot elhasználja.
+     * @return A maradék.
+     */
     public ExtendedRational useRemainder(){
         ExtendedRational ret = (ExtendedRational) remainder.clone();
         remainder = new ExtendedRational(Rational.ONE);
@@ -91,11 +125,19 @@ public class BasisSet extends AbstractSet<IBasisPart>
     }
 
 
+    /**
+     * Iterátor
+     * @return iterator
+     */
     @Override
     public Iterator<IBasisPart> iterator() {
         return map.values().iterator();
     }
 
+    /**
+     * Foreach függvény.
+     * @param action The action to be performed for each element
+     */
     @Override
     public void forEach(Consumer<? super IBasisPart> action) {
         map.forEach(new BiConsumer<BasisPartKey, IBasisPart>() {
@@ -108,32 +150,63 @@ public class BasisSet extends AbstractSet<IBasisPart>
 
     //TODO: Serialization
 
+    /**
+     * Mezei toArray függvény
+     * @param generator a function which produces a new array of the desired
+     *                  type and the provided length
+     * @return Bázis array
+     * @param <IBasis> Egy bázis
+     */
     @Override
     public <IBasis> IBasis[] toArray(IntFunction<IBasis[]> generator) {
         return (IBasis[])map.keySet().toArray();
     }
 
+    /**
+     * Boilerplate removeIf
+     * @param filter a predicate which returns {@code true} for elements to be
+     *        removed
+     * @return QED
+     */
     @Override
     public boolean removeIf(Predicate<? super IBasisPart> filter) {
         return super.removeIf(filter);
     }
 
+    /**
+     * Boilerplate stream
+     * @return QED
+     */
     @Override
     public Stream<IBasisPart> stream() {
         return super.stream();
     }
 
+    /**
+     * Boilderplate parallelStream
+     * @return QED
+     */
     @Override
     public Stream<IBasisPart> parallelStream() {
         return super.parallelStream();
     }
 
+    /**
+     * Boilerplate size
+     * @return map.size
+     */
     @Override
     public int size()  {
         return map.size();
     }
 
     //Adds exactly once, overrides parent, only use for creation
+
+    /**
+     * Hozzáad és felülír egy bázisrészt a bázishoz
+     * @param src
+     * @return sikerült-e.
+     */
     public boolean addAdditive(IBasisPart src){
         if(map.containsKey(src.getKey())){
             return false;
@@ -144,6 +217,12 @@ public class BasisSet extends AbstractSet<IBasisPart>
 
     //Adds exactly once, overrides parent
     ///\brief adds a SimpleBasisPart
+
+    /**
+     * Hozzáad egy egyszerű bázisrészt kulcs alapján.
+     * @param k
+     * @return sikerült-e.
+     */
     public boolean addAdditive(BigInteger k){
         if(map.containsKey(new BasisPartKey(k))){
             return false;
@@ -154,6 +233,11 @@ public class BasisSet extends AbstractSet<IBasisPart>
 
     //Don't forget, Rationals are immutable by default, need to do it right
     ///\brief Like multiplicative adding, except it won't normalise the value, used in rationalizing an extended rational.
+
+    /**
+     * Hozzászoroz egy bázisrészt az eredetihez, nem generál maradékot.
+     * @param src
+     */
     public void addMultSilently(@NotNull IBasisPart src){
         if(map.containsKey(src.getKey())){
             map.get(src.getKey()).addSilently(src.getValue());
@@ -166,6 +250,12 @@ public class BasisSet extends AbstractSet<IBasisPart>
 
 
     //Adds the basis' value to the basis in the map, returns remainder. If the key doesn't exist, it assumes (Rational) src in [0, 1[
+
+    /**
+     * Hozzászoroz egy bázisrészt az eredetihez, generál maradékot.
+     * @param src
+     * @return maradék
+     */
     public ExtendedRational addMultiplicative(@NotNull IBasisPart src){
         if(map.containsKey(src.getKey())){
             ExtendedRational rem = map.get(src.getKey()).addAndRemainder(src.getValue());
@@ -186,14 +276,29 @@ public class BasisSet extends AbstractSet<IBasisPart>
         return new ExtendedRational(Rational.ONE);
     }
 
+    /**
+     * Kulcs alapján ad bázisrészt
+     * @param b kulcs
+     * @return bázisrész
+     */
     public IBasisPart get(BasisPartKey b){
         return map.get(b);
     }
     
     ///use for simplebasispart
+
+    /**
+     * Biginteger alapján visszaad egy egyszerű részt.
+     * @param k kulcs
+     * @return rész
+     */
     public SimpleBasisPart getSimpleBasis(BigInteger k) { return (SimpleBasisPart) map.get(new BasisPartKey(k)); }
 
     //The set doesn't contain itself (obviously)
+
+    /**ToString
+     * @return A bázis részei és értékeik
+     */
      public String toString(){
             StringBuilder sb = new StringBuilder();
             sb.append('[');
@@ -219,6 +324,10 @@ public class BasisSet extends AbstractSet<IBasisPart>
             }
         }
 
+    /**
+     * Egyenlő-e az üres bázissal.
+     * @return egyenlő-e
+     */
     public boolean isNone(){
         Iterator<IBasisPart> it = map.values().iterator();
         while(it.hasNext()){
@@ -230,6 +339,12 @@ public class BasisSet extends AbstractSet<IBasisPart>
 
 
     //Overrides equals function, only use on BasisSet
+
+    /**
+     * Equals függvény, két bázis egyenlő, ha a nem nulla értékű részeik megegyeznek.
+     * @param src object to be compared for equality with this set
+     * @return egyenlők-e
+     */
     @Override
     public boolean equals(Object src){
         if(src instanceof BasisSet){
@@ -247,6 +362,10 @@ public class BasisSet extends AbstractSet<IBasisPart>
         return false;
     }
 
+    /**
+     * Boilerplate spliterator
+     * @return spliterator
+     */
     @Override
     public Spliterator<IBasisPart> spliterator() {
         return map.values().spliterator();
@@ -265,6 +384,10 @@ public class BasisSet extends AbstractSet<IBasisPart>
 //        }
 //    }
 
+    /**
+     * Mély klónozó
+     * @return klón
+     */
     @Override
     public Object clone(){
         BasisSet ret = new BasisSet();
@@ -276,10 +399,19 @@ public class BasisSet extends AbstractSet<IBasisPart>
         return ret;
     }
 
+    /**
+     * Visszaadja az egészéhez tartozó komplex kulcsot.
+     * @return kulcs
+     */
     public BasisPartKey getKey(){
         return new BasisPartKey(new ArrayList<BasisPartKey>(map.keySet()));
     }
 
+    /**
+     * Összehasonlító. Elsődlegesen méret szerint, aztán egyenként összemér.
+     * @param o the object to be compared.
+     * @return comparison
+     */
     @Override
     public int compareTo(@NotNull BasisSet o) {
         if(map.size() == o.map.size()){
@@ -293,6 +425,9 @@ public class BasisSet extends AbstractSet<IBasisPart>
         return map.size() > o.map.size() ? 1 : -1;
     }
 
+    /**
+     * HashCode függvény implementáció. A HashCode a nemnulla elemek mennyisége.
+     */
     @Override
     public int hashCode(){
         int result = 17;
@@ -305,6 +440,11 @@ public class BasisSet extends AbstractSet<IBasisPart>
     }
 
     ///Do Base first
+
+    /**
+     * A bázis értéke double-ben
+     * @return
+     */
     public double toDouble(){
         double ret = 1;
         for (IBasisPart part: map.values()) {

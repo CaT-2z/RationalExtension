@@ -3,18 +3,43 @@ package src.ui;
 import src.ExtendedRational;
 import src.Rational;
 
+/**
+ *  Kör osztály, egy kört valósít meg.
+ */
 public class Circle implements IDrawnObj{
+
+    /**
+     * X koordináta
+     */
     ExtendedRational X;
+
+    /**
+     * Y koordináta
+     */
     ExtendedRational Y;
 
+    /**
+     * Rádiusz
+     */
     ExtendedRational r;
 
+    /**
+     * Konstruktor
+     * @param x Az x koordináta
+     * @param y Az y koordináta
+     * @param r A rádiusz
+     */
     public Circle(ExtendedRational x, ExtendedRational y, ExtendedRational r){
         this.X = x;
         this.Y = y;
         this.r = r;
     }
 
+    /**
+     * Mettszéspont kereső
+     * @param obj Az objektum, amivel mettszéspontokat keres.
+     * @return
+     */
     @Override
     public ExtendedRational[] getIntersection(IDrawnObj obj) {
         if(obj instanceof Line){
@@ -34,14 +59,22 @@ public class Circle implements IDrawnObj{
     /// x^2 - 2xx_1 + mx^2 + 2mx(b-y1) = d^2 - (b-y1)^2 - x1^2
     /// (m^2 + 1)x^2 + (2m(b-y1) - 2x1)x + ( - d^2 + (b-y1)^2 + x1^2) = 0
     /// b +- sqrt(b^2 - 4ac) ...
+
+    /**
+     *  Egy vonal és a kör mettszéspontjait keresi
+     * @param l A vonal amivel nézzük a mettszéspontot
+     * @return A koordinátái a mettszéspontoknak
+     */
     public ExtendedRational[] getLineIntersection(Line l){
-
-        double[] sanity = cheating(l.slope());
-
         ExtendedRational[] canon = l.slope();
         return getLineIntFromSlope(canon);
     }
 
+    /**
+     *  Egy vonal és a kör mettszéspontjai a vonal kanonikus alakja szerint
+     * @param canon A meredeksége és az eltolása a vonalnak
+     * @return A koordinátái a mettszéspontnak
+     */
     public ExtendedRational[] getLineIntFromSlope(ExtendedRational[] canon){
         ExtendedRational m = canon[0];
         ExtendedRational c = canon[1];
@@ -65,6 +98,11 @@ public class Circle implements IDrawnObj{
         return new ExtendedRational[] {x1, Line.yAt(canon, x1), x2, Line.yAt(canon, x2)};
     }
 
+    /**
+     *  Segédfüggvény, ami primitívekkel kiszámolja, milyen eredményt várunk a mettszetfüggvénytől.
+     * @param obj A kör amivel mettszünk
+     * @return A mettszéspont koordinátái double-ben
+     */
     public double[] circleSanity(Circle obj){
         double a = X.toDouble();
         double b = Y.toDouble();
@@ -78,7 +116,10 @@ public class Circle implements IDrawnObj{
         double B = -2*p;
         double A = -2*q;
 
-        return new double[] {a,b,d,e,q,p,A,B,C};
+        double m = -1*(A/B);
+        double c = -1*(C/B) - m*a + b;
+
+        return cheating(new double[] {m,c});
     }
 
     ///(x-a) + (y-b) = d
@@ -89,9 +130,13 @@ public class Circle implements IDrawnObj{
     /// -2qx -2py + (r** - d** + q** + p**) = 0
     /// (q/p)x + y + (C/-2p) = 0
     ///
-    public ExtendedRational[] getCircleIntersection(Circle c){
 
-        double[] sanity = circleSanity(c);
+    /**
+     *  Kör Kör mettszéskalkuláló
+     * @param c A kör amivel mettszünk
+     * @return A mettszéspont
+     */
+    public ExtendedRational[] getCircleIntersection(Circle c){
 
         /// Remember to add back thhese at the end
         ExtendedRational q = c.X.add(X.negate());
@@ -121,9 +166,15 @@ public class Circle implements IDrawnObj{
 
     ///(x-x1)^2 + (mx + b-y1)^2 = d^2
     ///x^2 - 2x*x_1 + x1^2
-    public double[] cheating(ExtendedRational[] sl ){
-        double m = sl[0].toDouble();
-        double c = sl[1].toDouble();
+
+    /**
+     *  Segédfüggvény, ami primitívekkel kiszámolja, milyen eredményt várunk a mettszetfüggvénytől.
+     * @param sl Az egyenes kanonikus alakja primitívekben
+     * @return A mettszéspont koordinátái double-ban
+     */
+    public double[] cheating(double[] sl ){
+        double m = sl[0];
+        double c = sl[1];
         double p = X.toDouble();
         double q = Y.toDouble();
         double r = this.r.toDouble();
@@ -136,6 +187,6 @@ public class Circle implements IDrawnObj{
 
         if(d < 0) return null;
         double val = (-B+Math.sqrt(d))/(2*A);
-        return new double[] {m, c, p, q, r, A, B, C, d, val, val*m+c };
+        return new double[] {val, val*m+c};
     }
 }

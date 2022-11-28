@@ -5,25 +5,36 @@ import src.Rational;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionListener;
 import java.io.Serializable;
 import java.util.ArrayList;
 
+/**
+ *  A rajzfelület
+ **/
 class DrawPanel extends JPanel implements Serializable{
 
+    /**
+     *  Kitörli a kiválaszott elemet a felületről.
+     */
     public void deleteThis() {
         lines.remove(Selected);
         circles.remove(Selected);
         points.remove(Selected);
-        fuckGoBack();
+        GoBack();
     }
 
-    public void fuckGoBack() {
+    /**
+     *  Unselect függvény. Visszavált a JFrame normális alakjába.
+     */
+    public void GoBack() {
         Selected = null;
         selectionListener.accept();
         repaint();
     }
 
+    /**
+     *  State enum, az állapotfüggvényt valósítja meg.
+     */
     enum State {
         NEUTRAL,
         LINESTART,
@@ -34,24 +45,57 @@ class DrawPanel extends JPanel implements Serializable{
         INTERSECT
     }
 
+    /**
+     * Az éppen kiválasztott objektum
+     */
     IDrawnObj Selected = null;
 
+    /**
+     * Jelenlegi állapot
+     */
     State state;
 
+    /**
+     * A kijelző kező X koordinátája
+     */
     Rational X1;
+    /**
+     * A kijelző végső X koordinátája
+     */
     Rational X2;
+    /**
+     * A kijelző kező Y koordinátája
+     */
     Rational Y1;
+    /**
+     * A kijelző végső Y koordinátája
+     */
     Rational Y2;
 
 
+    /**
+     * Az interfész amin keresztül tud updatet küldeni a panel a framenek.
+     */
     interface voidFunc{
         public void accept();
     }
+
+    /**
+     * A JFrame szelekciós függvénye.
+     */
     transient voidFunc selectionListener;
+
+    /**
+     *  Összekapcsolja a Panelt a szülőjével.
+     * @param e a szülő által adott függvény.
+     */
     public void addSelectionEventListener(voidFunc e){
         selectionListener = e;
     }
 
+    /**
+     * Konstruktor
+     */
     public DrawPanel(){
         X1 = new Rational(0, 1);
         X2 = new Rational(5, 1);
@@ -63,6 +107,12 @@ class DrawPanel extends JPanel implements Serializable{
 
     }
 
+    /**
+     *  Kiválasztja a monitor pontján levő objektumot, beállítja a Selected-et arra.
+     * @param x X koordináta
+     * @param y Y koordináta
+     * @return Ki lett e választva bármi.
+     */
     public boolean SelectAt(int x, int y){
         for (Line l:lines) {
          int ran = l.x2.toScreenSpace(X1,X2, getWidth()) - l.x1.toScreenSpace(X1, X2, getWidth());
@@ -91,18 +141,25 @@ class DrawPanel extends JPanel implements Serializable{
         return false;
     }
 
+    /**
+     * A képernyőn levő vonalak
+     */
     public ArrayList<Line> lines = new ArrayList<>();
 
+    /**
+     * A képernyőn levő pontok
+     */
     public ArrayList<MyDot> points = new ArrayList<>();
+    /**
+     * A képernyőn levő körök
+     */
     public ArrayList<Circle> circles = new ArrayList<>();
 
-    private void drawWireFrame(Graphics g){
-        ///Not important
-        ///Gets the order of magnitude
-//        double Xmagnitude = Math.log(Xend - Xstart)/Math.log(4);
 
-    }
-
+    /**
+     * Kirajzoló függvény
+     * @param g the <code>Graphics</code> object to protect
+     */
     @Override
     public void paintComponent(Graphics g){
         super.paintComponent(g);
@@ -171,12 +228,34 @@ class DrawPanel extends JPanel implements Serializable{
 
         for(MyDot dot: points){
             g.setColor(Color.MAGENTA);
+            if(dot == selectedPoint) g.setColor(Color.ORANGE);
             int x = dot.x.toScreenSpace(X1, X2, getWidth());
             int y = dot.y.toScreenSpace(Y1, Y2, getHeight());
             g.fillOval(x-5, y-5, 10, 10);
         }
 
 
+    }
+
+
+    MyDot selectedPoint = null;
+
+    /**
+     * Kiválaszt egy pontot, ha nincs epszilon közelségben pont, visszaadja a kattintott koordinátát.
+     * @param X X koordináta
+     * @param Y Y koordináta
+     * @return A kiválasztott koordináták
+     */
+    ExtendedRational[] simpleSelect(int X, int Y){
+        for (MyDot point: points) {
+            int realX = point.x.toScreenSpace(X1, X2, getWidth());
+            int realY = point.y.toScreenSpace(Y1, Y2, getHeight());
+            if(Math.abs(realX - X) < 6 && Math.abs(realY - Y) < 6){
+                selectedPoint = point;
+                return new ExtendedRational[] {point.x, point.y};
+            }
+        }
+        return new ExtendedRational[] {ExtendedRational.fromScreenSpace(X1, X2, getWidth(), X), ExtendedRational.fromScreenSpace(Y1, Y2, getHeight(), Y)};
     }
 
 }

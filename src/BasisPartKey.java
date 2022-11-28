@@ -8,28 +8,63 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Objects;
 
+/**
+ * Egy BasisPartot multiplicitás szerint reprezentáló kulcs
+ */
 public class BasisPartKey implements Comparable<BasisPartKey>, Cloneable {
+
+        /**
+         * A Basis Part bázisa
+         */
         private BigInteger n;
 
+        /**
+         * Visszaadja a bázist, ha egyszerű bázis
+         * @return basis
+         */
         public BigInteger getInt() {
                 return isInt ? n : null;
         }
+
+        /**
+         * A bázis komplex kulcsa, ha nem egyszerű.
+         */
         private ArrayList<BasisPartKey> data;
 
+        /**
+         * A bázis komplex kulcsa, ha komplex.
+         * @return A komplex bázis kulcsai
+         */
         public ArrayList<BasisPartKey> getData() {
                 return isInt ? null : data;
         }
 
+        /**
+         * Egyszerű e a kulcs.
+         */
         private boolean isInt;
+
+        /**
+         * Konstruktor egyszerű bázishoz
+         * @param b A bázis
+         */
         BasisPartKey(BigInteger b){
                 n = b;
                 isInt = true;
         }
 
+
+        /**
+         * Üres konstruktor
+         */
         private BasisPartKey(){
 
         }
 
+        /**
+         * Konstruktor komplex bázishoz
+         * @param d a komplex bázis
+         */
         BasisPartKey(ArrayList<BasisPartKey> d){
                 data = d;
                 isInt = false;
@@ -37,6 +72,12 @@ public class BasisPartKey implements Comparable<BasisPartKey>, Cloneable {
 
 
         //Recursive compareto, don't make a part with an array with itself in it;
+
+        /**
+         * Összehasonlító függvény
+         * @param o the object to be compared.
+         * @return a > b ?
+         */
         @Override
         public int compareTo(@NotNull BasisPartKey o) {
                 if (o == null) {
@@ -62,6 +103,12 @@ public class BasisPartKey implements Comparable<BasisPartKey>, Cloneable {
         }
 
         /// guess who forgot what the function should look like?
+
+        /**
+         * Egyenlőség függvény
+         * @param src comparee
+         * @return Ezeknél miért nincs implicit érték? (a = b?)
+         */
         @Override
         public boolean equals(Object src){
                 if(src instanceof BasisPartKey){
@@ -70,6 +117,10 @@ public class BasisPartKey implements Comparable<BasisPartKey>, Cloneable {
                 return false;
         }
 
+        /**
+         * Klónozó fgv
+         * @return Mély klón (nagyon mély)
+         */
         public Object clone(){
                 BasisPartKey key = null;
                 if(isInt){
@@ -88,6 +139,11 @@ public class BasisPartKey implements Comparable<BasisPartKey>, Cloneable {
         }
 
         ///Into the darkness we go
+
+        /**
+         * Hash függvény, mert kell a HashMaphez
+         * @return hash
+         */
         @Override
         public int hashCode(){
                 return Objects.hash(n,data);

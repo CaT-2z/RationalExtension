@@ -7,12 +7,29 @@ import java.math.BigInteger;
 import java.util.*;
 
 /// Complex basis component that is made up of an extended rational.
+
+/**
+ * Komplex bázis rész osztály.
+ */
 public class ComplexBasisPart implements IBasisPart{
 
+    /**
+     * Mutatja, hogy hanyadikon van a bázis
+     */
     private Rational value;
+    /**
+     * A komplex bázis
+     */
     private ExtendedRational base;
+    /**
+     * A bázis multiplikatív inverze (annak egy racionális szorzata)
+     */
     private ExtendedRational inverse;
 
+    /**
+     * Visszaadja az inverzet, ha még nem számolta volna ki, kiszámolja.
+     * @return Az inverz
+     */
     public ExtendedRational getInverse() {
         if(inverse == null){
             findInverse();
@@ -20,18 +37,47 @@ public class ComplexBasisPart implements IBasisPart{
         return inverse;
     }
 
+    /**
+     * Visszaadja az inverz*base skalárt
+     * @return skalár
+     */
+    public Rational getinvScalar(){
+        if(invScalar == null){
+            findInverse();
+        }
+        return invScalar;
+    }
+
+    /**
+     * Az inverz*base skalár sajátértéke.
+     */
     private Rational invScalar;
 
+    /**
+     * Konstruktor
+     */
     ComplexBasisPart(){
         value = Rational.ZERO;
         inverse = null;
+        invScalar = null;
     }
+
+    /**
+     * Konstruktor
+     * @param b bázis
+     * @param o hatványrész
+     */
     ComplexBasisPart(ExtendedRational b, Rational o){
         value = (Rational) o.clone();
         base = b;
         inverse = null;
     }
 
+    /**
+     * Hozzászoroz (base)^e -t. Visszaadja a maradékot.
+     * @param e Hozzáadandó
+     * @return A maradék
+     */
     @Override
     public ExtendedRational addAndRemainder(Rational e) {
         Rational sum = value.add(e);
@@ -57,11 +103,19 @@ public class ComplexBasisPart implements IBasisPart{
         }
     }
 
+    /**
+     * Hozzáad (base)^e -nyit, de nem számol maradékot.
+     * @param e hozzáadandó
+     */
     @Override
     public void addSilently(Rational e) {
         value = value.add(e);
     }
 
+    /**
+     * Kiszámolja a hozzá tartozó bázis kulcsot
+     * @return kulcs
+     */
     @Override
     public BasisPartKey getKey() {
         Iterator<BasisSet> it = base.data.keySet().iterator();
@@ -72,6 +126,10 @@ public class ComplexBasisPart implements IBasisPart{
         return new BasisPartKey(keys);
     }
 
+    /**
+     * Visszaadja a hatványát
+     * @return hatványérték
+     */
     @Override
     public Rational getValue() {
         return value;
@@ -80,6 +138,10 @@ public class ComplexBasisPart implements IBasisPart{
     ///\brief Finds the algebraic conjugate of the extended rational
     ///\return Changes the inverse field of the object to the result. Only called when needed, because its expensive.
     /// Monoid -> monoidSubscriber ->
+
+    /**
+     * Kiszámolja az inverzét a bázisnak.
+     */
     public void findInverse(){
         /// Goes over the vector, gets each basissets,
         /// The Extended Rational it will change over and over
@@ -104,6 +166,8 @@ public class ComplexBasisPart implements IBasisPart{
         ///May need to simplify by RootofUnity
         ///TODO: Put root of unity here
 
+        invScalar = inverse.multiply(base);
+
 
 
         /// This won't need a root of unity check I think-> It (should) all cancel out, but do check the edge case where E(zeta) = -1*rational
@@ -111,17 +175,28 @@ public class ComplexBasisPart implements IBasisPart{
         
     }
 
-    private void simplifyExtendedRational(ExtendedRational er){
-        LinkedList<Map.Entry<BasisSet, Rational>> entries = new LinkedList<Map.Entry<BasisSet, Rational>>(er.data.entrySet());
-        for(int i = 0; i < entries.size(); i++){
-            RootOfUnityBasisPart root = (RootOfUnityBasisPart) entries.get(i).getKey().get(new BasisPartKey(BigInteger.valueOf(-1)));
-            if(root != null){
-                ///TODO: YOU WERE HERE
-            }
-        }
-    }
+//    /**
+//     *
+//     * @param er
+//     */
+//    private void simplifyExtendedRational(ExtendedRational er){
+//        LinkedList<Map.Entry<BasisSet, Rational>> entries = new LinkedList<Map.Entry<BasisSet, Rational>>(er.data.entrySet());
+//        for(int i = 0; i < entries.size(); i++){
+//            RootOfUnityBasisPart root = (RootOfUnityBasisPart) entries.get(i).getKey().get(new BasisPartKey(BigInteger.valueOf(-1)));
+//            if(root != null){
+//                ///TODO: YOU WERE HERE
+//            }
+//        }
+//    }
+
 
     ///HERE
+
+    /**
+     * Visszadja a komplexbázist, amit egy másik bázissal való szorzással kap.
+     * @param part szorzandó
+     * @return szorzat
+     */
     public ComplexBasisPart multiplyByPart(IBasisPart part){
         ExtendedRational ext = part.toExtendedRational();
         BigInteger gcd = value.denominator.gcd(part.getValue().denominator);
@@ -143,7 +218,16 @@ public class ComplexBasisPart implements IBasisPart{
     ///\brief Helper function for inverse finder: finds the rational conjugate of the algebraic number
     /// WTF was I doing here?? How is this supposed to work??
     /// The last one doesnt step forward... shouldnt step back
+    /**
+     * A rekurzív inverz számoló függvényhez tartozó kezdőérték, a rekurzió miatt osztálynyi scope kell neki.
+     */
     private boolean isStarting;
+
+    /**
+     * Rekurzívan létrehozza a bázis Galois Permutációit, majd összeszorozza őket.
+     * @param it A Monoidok
+     * @param multiplier A permutációs szorzó
+     */
     private void recursiveMonoidMultiplier(ListIterator<Monoid> it, ExtendedRational multiplier){
         if(it.hasNext()){
             Monoid monoid = it.next();
@@ -161,7 +245,6 @@ public class ComplexBasisPart implements IBasisPart{
                 /// multiply
                 /// TODO: mutable ExtendedRational multiplier OR wrapper wtf?? WTF DID I MEAN BY THIS??
                 /// What am I multiplying and how does it get here
-                System.out.println(" -- " + multiplier);
                 inverse = inverse.multiply((ExtendedRational) multiplier.clone());
             }else{
                 isStarting = false;
@@ -169,6 +252,11 @@ public class ComplexBasisPart implements IBasisPart{
         }
     }
 
+    /**
+     * Rekurzívan hozzárendel monoidokat a bázisokhoz primitív bázisrészek alapján.
+     * @param it Bázisok.
+     * @param monoids A monoidokat gyűjtő lista.
+     */
     private void recursiveMonoidSubscriber(Iterator<BasisSet> it, HashMap<BasisPartKey, Monoid> monoids){
         while(it.hasNext()){
             BasisSet b = it.next();
@@ -193,11 +281,20 @@ public class ComplexBasisPart implements IBasisPart{
         }
     }
 
+    /**
+     * toString
+     * @return A string reprezentációja a bázisrésznek
+     */
     public String toString(){
         return String.format("{|" + base.toString() + "|}" + "^" + value.toString());
     }
 
     /// implements clone, checks if inverse exists
+
+    /**
+     * Klón függvény
+     * @return mély klón
+     */
     public Object clone(){
         ComplexBasisPart ret = new ComplexBasisPart();
         ret.value = (Rational) value.clone();
@@ -210,11 +307,20 @@ public class ComplexBasisPart implements IBasisPart{
         return ret;
     }
 
+    /**
+     * Leklónozza a bázis extendedrationallá.
+     * @return A bázis klónja.
+     */
     @Override
     public ExtendedRational toExtendedRational() {
         return (ExtendedRational) base.clone();
     }
 
+    /**
+     * Összehasonlító
+     * @param o the object to be compared.
+     * @return összehasonlítás
+     */
     @Override
     public int compareTo(@NotNull IBasisPart o) {
         if(o instanceof SimpleBasisPart || o instanceof RootOfUnityBasisPart) {
@@ -234,12 +340,31 @@ public class ComplexBasisPart implements IBasisPart{
     }
 
     ///\brief Helper class, helps permute through the gallois group of the Extended Rational (with redundancy).
+
+    /**
+     * Segédosztály az inverzkereséshez, egy monoid a bázis részeinek azonos alapú simpleBase-eit gyűjti egybe.
+     */
     private class Monoid implements Comparable<Monoid> {
+
+        /**
+         * Azoknak a bázisoknak a listája, akikben talált a sajátjához tartozó részt.
+         */
         private ArrayList<BasisSet> subscriber;
+
+        /**
+         * A bázisrész, ami alapján keres.
+         */
         IBasisPart searcher;
 
+        /**
+         * A mennyiség, amit hozzá fog adni minden iterációban a feliratkozóihoz.
+         */
         Rational val;
 
+        /**
+         * Konstruktor
+         * @param n A rész, amit keres.
+         */
         Monoid(IBasisPart n){
             searcher = n;
             val = new Rational(Rational.ONE);
@@ -247,23 +372,41 @@ public class ComplexBasisPart implements IBasisPart{
             subscriber = new ArrayList<>();
         }
 
+        /**
+         * Hozzáadja az értékét a feliratkozókhoz.
+         * @param src saját rész.
+         */
         void addToPart(IBasisPart src){
             BigInteger uj = val.denominator.multiply(src.getValue().denominator).divide(val.denominator.gcd(src.getValue().denominator));
             val.denominator = uj;
         }
 
         ///\brief Adds a BasisSet to the list of subscibers.
+
+        /**
+         * Hozzáad egy bázist a feliratkozóihoz
+         * @param s bázis
+         */
         public void addSubscriber(BasisSet s){
             subscriber.add(s);
         }
 
         ///\brief Adds RootofUnity to the BasisSet equal to the 1/denominator of the subscribed basis. I wonder if this would still work with starter values in C
+
+        /**
+         * Végigmegy a feliratkozóin, és hozzájuk ad -1^(value)-t
+         */
         public void changeSubscriber(){
             for (BasisSet b: subscriber){
                 b.addMultSilently(new RootOfUnityBasisPart(new Rational(BigInteger.ONE, searcher.getValue().denominator)));
             }
         }
 
+        /**
+         * Összehasonlító
+         * @param o the object to be compared.
+         * @return összehasonlítás
+         */
         @Override
         public int compareTo(@NotNull ComplexBasisPart.Monoid o) {
             int val = searcher.getKey().compareTo(o.searcher.getKey());
@@ -275,6 +418,10 @@ public class ComplexBasisPart implements IBasisPart{
 
     }
 
+    /**
+     * Kiszámítja a double értékét a bázis hatványának
+     * @return A bázis értéke
+     */
     public double toDouble(){
         return Math.pow(base.toDouble(), value.toDouble());
     }

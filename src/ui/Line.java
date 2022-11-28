@@ -4,12 +4,38 @@ package src.ui;
 
 import src.ExtendedRational;
 
+/**
+ * Vonalat megvalósító osztály
+ */
 public class Line implements IDrawnObj{
+
+    /**
+     * A szakasz X kezdőpontja
+     */
     ExtendedRational x1;
+
+    /**
+     * A szakasz X végpontja
+     */
     ExtendedRational x2;
+
+    /**
+     * A szakasz Y kezdőpontja
+     */
     ExtendedRational y1;
+
+    /**
+     * A szakasz Y végpontja
+     */
     ExtendedRational y2;
 
+    /**
+     * Konstruktor
+     * @param a x1
+     * @param b y1
+     * @param c x2
+     * @param d y2
+     */
     public Line(ExtendedRational a, ExtendedRational b, ExtendedRational c, ExtendedRational d) {
         if(a.toDouble() < c.toDouble()) {
             x1 = a;
@@ -24,6 +50,11 @@ public class Line implements IDrawnObj{
         }
     }
 
+
+    /**
+     * Kiszámítja a vonal kanonikus alakját (meredekség + eltolás)
+     * @return [meredekség, eltolás]
+     */
     public ExtendedRational[] slope(){
         ExtendedRational xran = x2.add(x1.negate());
         ExtendedRational yran = y2.add(y1.negate());
@@ -32,17 +63,33 @@ public class Line implements IDrawnObj{
         return new ExtendedRational[] {slope, offset};
     }
 
+    /**
+     * Kiszámítja az Y koordinátát egy adott X ponton.
+     * @param x X koordináta
+     * @return mx + b = y
+     */
     public ExtendedRational yAt(ExtendedRational x){
 //        if(x.toDouble() < x1.toDouble() || x.toDouble() > x2.toDouble()) return null;
         ExtendedRational[] sl = slope();
         return yAt(sl, x);
     }
 
+    /**
+     * Kiszámítja egy kanonikus alakból az Y koordinátát.
+     * @param slope A meredekség és eltolás
+     * @param x X koordináta
+     * @return Y
+     */
     public static ExtendedRational yAt(ExtendedRational[] slope, ExtendedRational x){
         return slope[0].multiply(x).add(slope[1]);
     }
 
 
+    /**
+     * Kiszámítja a mettszéspontot obj-val
+     * @param obj Az objektum, amivel mettszéspontokat keres.
+     * @return Mettszéspont(ok)
+     */
     @Override
     public ExtendedRational[] getIntersection(IDrawnObj obj) {
         if(obj instanceof Line){

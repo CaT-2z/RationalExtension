@@ -30,11 +30,5 @@ public class Main {
         Frame frame = new Frame();
         frame.setVisible(true);
 
-//        ExtendedRational x1 = ExtendedRational.fromSimple(1, 1);
-//        Line l = new Line(x1, x1, x1.add(Rational.ONE), x1.add(ExtendedRational.fromSimple(2, 1)));
-//
-//        l.slope();
-//        System.out.println(l.slope());
-
     }
 }

@@ -5,8 +5,17 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Map;
 
+/**
+ * Algoritmusok, amik nem tartoznak specifikusan semelyik osztályhoz
+ */
 public class Utils {
     // Pollard-Strassen algorithm for prime factorizationn
+
+    /**
+     * Kiszámítja egy szám egy prímtényezőjét Pollard-Strassen algoritmus segítségével
+     * @param n A szám
+     * @return prímtényező
+     */
     static BigInteger findFactor(BigInteger n) {
         if (n.intValue() < 16 && n.intValue() > 2 && n.intValue() % 2 == 0) {
             return BigInteger.TWO;
@@ -34,6 +43,11 @@ public class Utils {
         return BigInteger.ONE;
     }
 
+    /**
+     * Kiszámítja egy szám összes prímtényezőjét
+     * @param n A szám
+     * @return A prímtényezői
+     */
     static ArrayList<BigInteger> factor(BigInteger n) {
         ArrayList<BigInteger> factors = new ArrayList<BigInteger>();
         if(n.bitLength() > 32){
@@ -51,8 +65,14 @@ public class Utils {
         return factors;
     }
 
+    /**
+     * Kiszámítja egy algebrai szám n-edik gyökét
+     * @param o a szám
+     * @param b hanyadik gyöke
+     * @return a gyök
+     */
     ///\brief Creates root from extended rational
-    static ExtendedRational root(ExtendedRational o, BigInteger b) {
+    public static ExtendedRational root(ExtendedRational o, BigInteger b) {
         if (o.isRationalCastable()) {
             return new ExtendedRational((Rational) o, b);
         }
@@ -95,6 +115,13 @@ public class Utils {
 
     ///\brief Helper function for root, Multiplies through list and takes the products root.
     ///\returns Biginteger array, first value: The rational part of the root, second value: the remainder.
+
+    /**
+     * Segítő függvény a gyökszámítóhoz, prímtényezők listájának számítja a gyökét
+     * @param num prímlista
+     * @param b hanyadik gyök
+     * @return [racionális rész, maradék]
+     */
     static BigInteger[] multiplyAndRemainder(ArrayList<BigInteger> num, BigInteger b) {
         BigInteger[] dens = num.stream().distinct().map((distinct) -> {
 

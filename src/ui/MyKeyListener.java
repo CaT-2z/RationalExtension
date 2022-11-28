@@ -5,12 +5,24 @@ import src.Rational;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 
+/**
+ * A billentyűkezelő
+ */
 class MyKeyListener implements KeyListener {
+
+
+    /**
+     * Nem használt, KeyListener miatt van.
+     */
     @Override
     public void keyTyped(KeyEvent e) {
 
     }
 
+    /**
+     * Nyílbillentyűkre figyel: mozgatja a rajztáblát.
+     * @param e the event to be processed
+     */
     @Override
     public void keyPressed(KeyEvent e) {
         DrawPanel panel = (DrawPanel)   e.getComponent();
@@ -40,6 +52,9 @@ class MyKeyListener implements KeyListener {
 
     }
 
+    /**
+     * Nem használt, KeyListener miatt van.
+     */
     @Override
     public void keyReleased(KeyEvent e) {
 

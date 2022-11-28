@@ -8,12 +8,29 @@ import java.util.function.BiConsumer;
 
 // TODO Rational to BasisSet()
 /// Rational with a map of basis-value pairs.
+
+/**
+ * Egy algebrai szám ábrázolása.
+ */
 public class ExtendedRational extends Rational implements Cloneable{
+
+    /**
+     * A bázis-érték párok.
+     */
     public HashMap<BasisSet, Rational> data;
+
+    /**
+     * Konstruktor
+     */
     public ExtendedRational(){
         super(BigInteger.ZERO, BigInteger.ONE);
         data = new HashMap<BasisSet, Rational>();
     }
+
+    /**
+     * Konstruktor egy egyszerű racionális számból
+     * @param o racionális szám
+     */
     public ExtendedRational(Rational o){
         super(o);
         data = new HashMap<BasisSet, Rational>();
@@ -24,7 +41,13 @@ public class ExtendedRational extends Rational implements Cloneable{
 
     //This assumes rational already in GCD form,
     //Creates nth root of rational
-    ExtendedRational(Rational o, BigInteger b){
+
+    /**
+     * Konstruktor egy raconális számból, és hogy hanyadik gyökét vesszük.
+     * @param o racinális alap
+     * @param b hanyadik gyök
+     */
+    public ExtendedRational(Rational o, BigInteger b){
         super(Rational.ZERO);
         ArrayList<BigInteger> numfactors = Utils.factor(o.getNumerator());
         ArrayList<BigInteger> denfactors = Utils.factor(o.getDenominator());
@@ -52,25 +75,50 @@ public class ExtendedRational extends Rational implements Cloneable{
         prune();
     }
 
+    /**
+     * A szám n-edik gyöke.
+     * @param n hanyadik gyök
+     * @return A gyök
+     */
     public ExtendedRational root(int n){
         return Utils.root(this, BigInteger.valueOf(n));
     }
 
 
     ///Check that its not called with shallow copies
+
+    /**
+     * Konstruktor
+     * @param o A racionális rész
+     * @param hash A bázis, érték párok
+     */
     public ExtendedRational(Rational o, HashMap<BasisSet, Rational> hash){
         super(o);
         data = new HashMap<BasisSet, Rational>(hash);
     }
 
+    /**
+     * Belerak egy új bázis érték párt
+     * @param s bázis
+     * @param l érték
+     */
     public void put(BasisSet s, Rational l){
         data.put(s, l);
     }
 
+    /**
+     * Megtalálja a bázis értékét
+     * @param s bázis
+     * @return érték
+     */
     public Rational get(BasisSet s){
         return data.get(s);
     }
 
+    /**
+     * ToString
+     * @return String reprezentáció
+     */
     public String toString(){
         Iterator<Map.Entry<BasisSet,Rational>> i = data.entrySet().iterator();
         if (!i.hasNext())
@@ -104,6 +152,12 @@ public class ExtendedRational extends Rational implements Cloneable{
 
 
     // multiplies rational with extended rational
+
+    /**
+     * Összeszorozza magát egy racionális számmal
+     * @param src racionális szám
+     * @return szorzat
+     */
     public ExtendedRational multiplyRational(Rational src){
         ExtendedRational a = new ExtendedRational();
         Rational s = ((Rational) this).multiply(src);
@@ -118,6 +172,12 @@ public class ExtendedRational extends Rational implements Cloneable{
 
 
     ///Multiplies Extendedrational by a BasisSet
+
+    /**
+     * Megszorozza magát egy bázissal
+     * @param basis bázis
+     * @return szorzat
+     */
     public ExtendedRational multiplyByBasis(BasisSet basis){
         ExtendedRational a = new ExtendedRational();
         a.put(basis, new Rational(this));
@@ -141,16 +201,19 @@ public class ExtendedRational extends Rational implements Cloneable{
 
 
     ///\brief Adds two extended rationals together
+
+    /**
+     * Összead két számot
+     * @param src összeadandó
+     * @return összeg
+     */
     public ExtendedRational add(ExtendedRational src){
         ExtendedRational sum = (ExtendedRational) this.clone();
-        src.data.forEach(new BiConsumer<BasisSet, Rational>() {
-            @Override
-            public void accept(BasisSet bases, Rational rational) {
-                if(!sum.data.containsKey(bases)){
-                    sum.data.put((BasisSet) bases.clone(), rational);
-                }else {
-                    sum.data.replace(bases, sum.data.get(bases).add(rational));
-                }
+        src.data.forEach((bases, rational) -> {
+            if (!sum.data.containsKey(bases)) {
+                sum.data.put((BasisSet) bases.clone(), rational);
+            } else {
+                sum.data.replace(bases, sum.data.get(bases).add(rational));
             }
         });
 
@@ -163,6 +226,11 @@ public class ExtendedRational extends Rational implements Cloneable{
         return sum;
     }
 
+    /**
+     * Összeadja magát egy racionális számmal
+     * @param src racionális szám
+     * @return összeg
+     */
     public ExtendedRational add(Rational src){
         ExtendedRational o = (ExtendedRational) this.clone();
         Rational r = super.add(src);
@@ -172,6 +240,9 @@ public class ExtendedRational extends Rational implements Cloneable{
         return o;
     }
 
+    /**
+     * Egyszerüsíti az értékét: Kidobja a 0 értékű bázisokat.
+     */
     private void prune(){
         Iterator<Map.Entry<BasisSet, Rational>> it = data.entrySet().iterator();
         while(it.hasNext()){
@@ -186,6 +257,12 @@ public class ExtendedRational extends Rational implements Cloneable{
     //TODO: empty BasisSets don't work
     // Maybe redo the rational part?
     //TODO: test equality
+
+    /**
+     * Összeszoroz két számot, visszaadja a szorzatukat.
+     * @param src szorzandó
+     * @return szorzat
+     */
     public ExtendedRational multiply(@NotNull ExtendedRational src){
 
         ///This should mitigate infinite loops
@@ -239,7 +316,13 @@ public class ExtendedRational extends Rational implements Cloneable{
         return product;
     }
 
+
     // returns true if there are no irrational values in it
+
+    /**
+     * Visszaadja, hogy egyenlő e a szám a racionális részével
+     * @return egyenlő e
+     */
     public boolean isRationalCastable(){
         if(data.isEmpty()) return true;
         Iterator<Map.Entry<BasisSet, Rational>> it = data.entrySet().iterator();
@@ -251,6 +334,11 @@ public class ExtendedRational extends Rational implements Cloneable{
     }
 
     /// Gets negate
+
+    /**
+     * Visszaadja az additív inverzét
+     * @return inverz.
+     */
     public ExtendedRational negate(){
         Rational ratPart = super.negate();
         ExtendedRational a = new ExtendedRational(ratPart);
@@ -260,6 +348,10 @@ public class ExtendedRational extends Rational implements Cloneable{
         return a;
     }
 
+    /**
+     * Klónozza a számot
+     * @return klón
+     */
     @Override
     public Object clone(){
         ExtendedRational rat = new ExtendedRational();
@@ -274,13 +366,19 @@ public class ExtendedRational extends Rational implements Cloneable{
     }
 
     //divider
+
+    /**
+     * Leosztja a számot a paraméterben kapott számmal.
+     * @param src osztó
+     * @return eredmény
+     */
     public ExtendedRational divide(ExtendedRational src){
         if(src.isRationalCastable()) {
             return multiplyRational(((Rational) src).inverse());
         }
-        if(src.data.size() == 1){
+        if(src.data.size() == 1 && ((Rational)src).equals(Rational.ZERO) ){
             ExtendedRational minv = (ExtendedRational) src.clone();
-            for (Map.Entry<BasisSet, Rational> entry: data.entrySet()) {
+            for (Map.Entry<BasisSet, Rational> entry: minv.data.entrySet()) {
                 entry.setValue(entry.getValue().inverse());
                 for (IBasisPart iBasisPart : entry.getKey()) {
                     Iterator<IBasisPart> it = entry.getKey().iterator();
@@ -289,23 +387,46 @@ public class ExtendedRational extends Rational implements Cloneable{
                         b.addSilently(b.getValue().multiply(new Rational(BigInteger.valueOf(-2),BigInteger.ONE)));
                     }
                 }
-                multiply(minv);
+                return multiply(minv);
             }
         }
-        throw new RuntimeException("Port out the inverse function");
+
+        ComplexBasisPart comp = new ComplexBasisPart(src, Rational.ONE);
+        ExtendedRational inv = comp.getInverse().multiplyRational(comp.getinvScalar().inverse());
+        return multiply(inv);
     }
 
     ///brief: Megkönnyíti a teszelést, intekből csinál egyszerű er-t
+
+    /**
+     * Létrehoz egy algebrai számot a paraméterek alapján
+     * @param a A racionális rész numerátora
+     * @param b A racionális rész denominátora
+     * @return A létrejött szám
+     */
     static public ExtendedRational fromSimple(int a, int b){
         return new ExtendedRational(new Rational(a, b));
     }
 
+    /**
+     * A monitor pixelkoordinátáiból számít algebrai számot.
+     * @param start a rajztábla min X-je
+     * @param end a rajztábla max X-je
+     * @param size a tábla mérete pixelben
+     * @param offs a választott pixel
+     * @return A létrejött szám
+     */
     static public ExtendedRational fromScreenSpace(Rational start, Rational end, int size, int offs){
         Rational point = end.add(start.negate()).multiply(new Rational(offs, size)).add(start);
         return new ExtendedRational(point);
     }
 
     ///Gets double representation of rational
+
+    /**
+     * Kiszámolja a double értékét
+     * @return A double érték
+     */
     public double toDouble(){
         double ret = 0;
         for (Map.Entry<BasisSet, Rational> entry: data.entrySet()){
@@ -316,6 +437,14 @@ public class ExtendedRational extends Rational implements Cloneable{
     }
     ///Returns relative screen coordinates
     ///Maybe this needs to be in a different place
+
+    /**
+     * Számból pixelt számol
+     * @param startRat a tábla kezdőértéke
+     * @param endRat a tábla végső értéke
+     * @param size a tábla mérete pixelben
+     * @return a hozzá tartozó pixel
+     */
     public int toScreenSpace(Rational startRat, Rational endRat, int size){
         double val = this.toDouble();
         val -= startRat.toDouble();
